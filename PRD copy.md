@@ -1,27 +1,3 @@
-<!-----
-
-
-
-Conversion time: 4.552 seconds.
-
-
-Using this Markdown file:
-
-1. Paste this output into your source file.
-2. See the notes and action items below regarding this conversion run.
-3. Check the rendered output (headings, lists, code blocks, tables) for proper
-   formatting and use a linkchecker before you publish this page.
-
-Conversion notes:
-
-* Docs to Markdown version 1.0β44
-* Fri Sep 19 2025 09:31:22 GMT-0700 (PDT)
-* Source doc: [DRAFT] Pulse Challenges — Web App POC PRD
-* Tables are currently converted to HTML tables.
------>
-
-
-
 # **Pulse Challenges — Web App POC PRD (Next.js + Privy + Abstract)**
 
 **Owner:** Michael Paris \
