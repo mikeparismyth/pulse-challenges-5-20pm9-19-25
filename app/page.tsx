@@ -1,5 +1,7 @@
 'use client';
 
+// MOCK: Replace mockTournaments with API call to /api/challenges
+import { mockTournaments, tournamentToCardData } from '@/lib/mockData';
 import TournamentCard from '@/components/TournamentCard';
 import FeaturedChallengesCarousel from '@/components/FeaturedChallengesCarousel';
 import ChallengeFilters, { FilterState } from '@/components/ChallengeFilters';
@@ -18,75 +20,8 @@ export default function Home() {
     sortBy: 'latest',
   });
 
-  // Simple tournament data for display
-  const tournaments = [
-    {
-      id: 'tournament-1',
-      title: 'Fortnite Battle Royale Championship',
-      status: 'LIVE' as const,
-      prizePool: '4,350 MYTH',
-      participants: 87,
-      maxParticipants: 100,
-      entryFee: '50 MYTH',
-      timeRemaining: 'In Progress',
-      startTime: '2025-01-15T18:00:00Z'
-    },
-    {
-      id: 'tournament-2',
-      title: 'Valorant Champions Series',
-      status: 'UPCOMING' as const,
-      prizePool: '2,952 PENGU',
-      participants: 32,
-      maxParticipants: 64,
-      entryFee: '100 PENGU',
-      timeRemaining: 'Starts in 2 hours',
-      startTime: '2025-01-20T16:00:00Z'
-    },
-    {
-      id: 'tournament-3',
-      title: 'League of Legends World Cup',
-      status: 'UPCOMING' as const,
-      prizePool: '1,080 MYTH',
-      participants: 16,
-      maxParticipants: 32,
-      entryFee: '75 MYTH',
-      timeRemaining: 'Starts in 1 day',
-      startTime: '2025-01-25T12:00:00Z'
-    },
-    {
-      id: 'tournament-4',
-      title: 'CS2 Major Championship',
-      status: 'LIVE' as const,
-      prizePool: '5,520 PENGU',
-      participants: 24,
-      maxParticipants: 24,
-      entryFee: '250 PENGU',
-      timeRemaining: 'In Progress',
-      startTime: '2025-01-15T14:00:00Z'
-    },
-    {
-      id: 'tournament-5',
-      title: 'Rocket League Championship',
-      status: 'ENDED' as const,
-      prizePool: '1,296 MYTH',
-      participants: 48,
-      maxParticipants: 48,
-      entryFee: '30 MYTH',
-      timeRemaining: 'Completed',
-      startTime: '2025-01-10T10:00:00Z'
-    },
-    {
-      id: 'tournament-6',
-      title: 'Apex Legends Arena',
-      status: 'UPCOMING' as const,
-      prizePool: '864 PENGU',
-      participants: 12,
-      maxParticipants: 60,
-      entryFee: '80 PENGU',
-      timeRemaining: 'Starts in 3 days',
-      startTime: '2025-01-30T15:00:00Z'
-    }
-  ];
+  // Convert mock tournament data to display format
+  const tournaments = mockTournaments.map(tournamentToCardData);
 
   // Filter and organize tournaments
   const { liveTournaments, upcomingTournaments, completedTournaments } = useMemo(() => {
