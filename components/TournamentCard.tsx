@@ -6,6 +6,21 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TokenDisplay } from '@/components/ui/TokenDisplay';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { GameType } from '@/lib/types';
+
+// MOCK: Replace with dynamic game configuration from API
+const GAME_THEMES = {
+  'PUDGY_PARTY': {
+    heroImage: 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800',
+    gradient: 'from-blue-900/80 via-cyan-900/60 to-transparent',
+    gameName: 'Pudgy Party'
+  },
+  'NFL_RIVALS': {
+    heroImage: 'https://images.pexels.com/photos/1293261/pexels-photo-1293261.jpeg?auto=compress&cs=tinysrgb&w=800',
+    gradient: 'from-green-900/80 via-emerald-900/60 to-transparent',
+    gameName: 'NFL Rivals'
+  }
+};
 
 interface TournamentCardProps {
   id?: string;
@@ -17,6 +32,7 @@ interface TournamentCardProps {
   entryFee?: string;
   timeRemaining?: string;
   startTime?: string;
+  gameType?: GameType; // TODO: Pass gameType prop from parent components
 }
 
 export default function TournamentCard({
@@ -29,6 +45,7 @@ export default function TournamentCard({
   entryFee,
   timeRemaining,
   startTime,
+  gameType,
 }: TournamentCardProps) {
   const statusStyles = {
     LIVE: 'bg-red-500/90 text-white border-red-500/50 shadow-glow-red backdrop-blur-sm',
@@ -36,57 +53,8 @@ export default function TournamentCard({
     ENDED: 'bg-gray-500/90 text-white border-gray-500/50 backdrop-blur-sm',
   };
 
-  // Game-specific hero images and themes
-  const getGameTheme = (title: string) => {
-    if (title.toLowerCase().includes('fortnite')) {
-      return {
-        heroImage: 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800',
-        gradient: 'from-purple-900/80 via-blue-900/60 to-transparent',
-        gameName: 'Fortnite'
-      };
-    }
-    if (title.toLowerCase().includes('valorant')) {
-      return {
-        heroImage: 'https://images.pexels.com/photos/3165335/pexels-photo-3165335.jpeg?auto=compress&cs=tinysrgb&w=800',
-        gradient: 'from-red-900/80 via-orange-900/60 to-transparent',
-        gameName: 'Valorant'
-      };
-    }
-    if (title.toLowerCase().includes('league')) {
-      return {
-        heroImage: 'https://images.pexels.com/photos/1293261/pexels-photo-1293261.jpeg?auto=compress&cs=tinysrgb&w=800',
-        gradient: 'from-blue-900/80 via-cyan-900/60 to-transparent',
-        gameName: 'League of Legends'
-      };
-    }
-    if (title.toLowerCase().includes('cs2') || title.toLowerCase().includes('counter')) {
-      return {
-        heroImage: 'https://images.pexels.com/photos/3945313/pexels-photo-3945313.jpeg?auto=compress&cs=tinysrgb&w=800',
-        gradient: 'from-gray-900/80 via-slate-900/60 to-transparent',
-        gameName: 'Counter-Strike 2'
-      };
-    }
-    if (title.toLowerCase().includes('rocket league')) {
-      return {
-        heroImage: 'https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg?auto=compress&cs=tinysrgb&w=800',
-        gradient: 'from-orange-900/80 via-yellow-900/60 to-transparent',
-        gameName: 'Rocket League'
-      };
-    }
-    if (title.toLowerCase().includes('apex')) {
-      return {
-        heroImage: 'https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg?auto=compress&cs=tinysrgb&w=800',
-        gradient: 'from-green-900/80 via-emerald-900/60 to-transparent',
-        gameName: 'Apex Legends'
-      };
-    }
-    // Default gaming theme
-    return {
-      heroImage: 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800',
-      gradient: 'from-purple-900/80 via-indigo-900/60 to-transparent',
-      gameName: 'Gaming Tournament'
-    };
-  };
+  // Use gameType prop or default to Pudgy Party
+  const gameTheme = gameType ? GAME_THEMES[gameType] : GAME_THEMES['PUDGY_PARTY'];
 
   // Extract token info from prizePool string
   const extractTokenInfo = (tokenStr: string) => {
@@ -135,7 +103,6 @@ export default function TournamentCard({
 
   const prizeInfo = extractTokenInfo(prizePool);
   const entryInfo = entryFee ? extractTokenInfo(entryFee) : null;
-  const gameTheme = getGameTheme(title);
 
   return (
     <motion.div 
