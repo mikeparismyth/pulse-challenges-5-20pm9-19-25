@@ -2,6 +2,7 @@
 
 // MOCK: Replace mockTournaments with API call to /api/challenges
 import { mockTournaments, tournamentToCardData } from '@/lib/mockData';
+import { GameType } from '@/lib/types';
 import TournamentCard from '@/components/TournamentCard';
 import ChallengeFilters, { FilterState } from '@/components/ChallengeFilters';
 import Link from 'next/link';
@@ -35,16 +36,14 @@ export default function Challenges() {
 
       // Game filter
       if (filters.game !== 'all') {
-        const gameInTitle = tournament.title.toLowerCase();
-        const gameMap = {
-          fortnite: 'fortnite',
-          valorant: 'valorant',
-          league: 'league',
-          cs2: 'cs2',
-          rocket: 'rocket',
-          apex: 'apex'
+        // MOCK: Replace with API filtering logic
+        const gameMap: { [key: string]: GameType } = {
+          'pudgy-party': 'PUDGY_PARTY',
+          'nfl-rivals': 'NFL_RIVALS'
         };
-        if (!gameInTitle.includes(gameMap[filters.game as keyof typeof gameMap])) {
+        const expectedGameType = gameMap[filters.game];
+        const tournamentData = mockTournaments.find(t => tournamentToCardData(t).id === tournament.id);
+        if (!tournamentData || tournamentData.game !== expectedGameType) {
           return false;
         }
       }

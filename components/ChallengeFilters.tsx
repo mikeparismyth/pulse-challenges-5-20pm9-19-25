@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GameType } from '@/lib/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,12 +38,8 @@ export default function ChallengeFilters({ filters, onFiltersChange }: Challenge
 
   const gameOptions = [
     { value: 'all', label: 'All Games' },
-    { value: 'fortnite', label: 'Fortnite' },
-    { value: 'valorant', label: 'Valorant' },
-    { value: 'league', label: 'League of Legends' },
-    { value: 'cs2', label: 'Counter-Strike 2' },
-    { value: 'rocket', label: 'Rocket League' },
-    { value: 'apex', label: 'Apex Legends' },
+    { value: 'pudgy-party', label: 'Pudgy Party' },
+    { value: 'nfl-rivals', label: 'NFL Rivals' },
   ];
 
   const tokenOptions = [
