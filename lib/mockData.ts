@@ -1,13 +1,14 @@
 import { Tournament, TournamentCardData, TournamentState } from './types';
 
-// Mock tournament data using proper types with MYTH/PENGU token examples
+// MOCK: Replace with API call to /api/challenges
 export const mockTournaments: Tournament[] = [
   {
     id: '550e8400-e29b-41d4-a716-446655440001',
-    title: 'Fortnite Battle Royale Championship',
-    slug: 'fortnite-battle-royale-championship',
+    title: 'Pudgy Ice Sprint Championship',
+    slug: 'pudgy-ice-sprint-championship',
     visibility: 'public',
     game: 'PUDGY_PARTY',
+    game_mode: 'BATTLE_ROYALE',
     mode: 'LEADERBOARD',
     leaderboard_config: {
       score_by: 'TOP1_COUNT',
@@ -43,17 +44,18 @@ export const mockTournaments: Tournament[] = [
     created_by: 'user_123',
     allow_user_generated: true,
     dispute_window_hours: 24,
-    description: 'Epic Fortnite tournament with massive prize pool',
+    description: 'Race through icy terrains in this epic Pudgy Party battle royale! Slide, dash, and compete for the ultimate ice sprint victory.',
     participants: 87,
     created_at: '2025-01-10T10:00:00Z',
     updated_at: '2025-01-15T17:30:00Z'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
-    title: 'Valorant Champions Series',
-    slug: 'valorant-champions-series',
+    title: 'Arctic Battle Royale Tournament',
+    slug: 'arctic-battle-royale-tournament',
     visibility: 'public',
     game: 'PUDGY_PARTY',
+    game_mode: 'BATTLE_ROYALE',
     mode: 'LEADERBOARD',
     leaderboard_config: {
       score_by: 'TOP3_COUNT',
@@ -89,17 +91,18 @@ export const mockTournaments: Tournament[] = [
     created_by: 'user_456',
     allow_user_generated: true,
     dispute_window_hours: 24,
-    description: 'Competitive Valorant tournament for skilled players',
+    description: 'Survive the frozen wasteland in this intense Pudgy Party battle royale. Only the strongest penguins will claim victory in the arctic arena!',
     participants: 32,
     created_at: '2025-01-12T14:00:00Z',
     updated_at: '2025-01-15T12:00:00Z'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440003',
-    title: 'League of Legends World Cup',
-    slug: 'league-of-legends-world-cup',
+    title: 'Penguin Coin Rush Challenge',
+    slug: 'penguin-coin-rush-challenge',
     visibility: 'public',
     game: 'PUDGY_PARTY',
+    game_mode: 'ALL_MODES',
     mode: 'LEADERBOARD',
     leaderboard_config: {
       score_by: 'COINS_EARNED',
@@ -135,17 +138,18 @@ export const mockTournaments: Tournament[] = [
     created_by: 'user_789',
     allow_user_generated: false,
     dispute_window_hours: 48,
-    description: 'Premier League of Legends tournament with international players',
+    description: 'Collect the most coins across all Pudgy Party game modes! Waddle, slide, and gather treasures in this ultimate coin collection challenge.',
     participants: 16,
     created_at: '2025-01-08T09:00:00Z',
     updated_at: '2025-01-15T11:00:00Z'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440004',
-    title: 'CS2 Major Championship',
-    slug: 'cs2-major-championship',
+    title: 'Pudgy Party Winter Festival',
+    slug: 'pudgy-party-winter-festival',
     visibility: 'public',
     game: 'PUDGY_PARTY',
+    game_mode: 'EVENT',
     mode: 'LEADERBOARD',
     leaderboard_config: {
       score_by: 'TOP1_COUNT',
@@ -177,24 +181,25 @@ export const mockTournaments: Tournament[] = [
       dev_fee_wallet: '0xdevpengu123456789012345678901234567890',
       organizer_fee_wallet: '0x0000000000000000000000000000000000000000'
     },
-    state: 'LIVE',
+    state: 'ENDED',
     created_by: 'user_101',
     allow_user_generated: true,
     dispute_window_hours: 24,
-    description: 'High-stakes CS2 tournament for professional teams',
+    description: 'Celebrate the winter season with special Pudgy Party festival events! Join the festive fun with exclusive winter-themed challenges and rewards.',
     participants: 24,
     created_at: '2025-01-05T16:00:00Z',
     updated_at: '2025-01-15T14:30:00Z'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440005',
-    title: 'Rocket League Championship',
-    slug: 'rocket-league-championship',
+    title: 'NFL Rivals Season Championship',
+    slug: 'nfl-rivals-season-championship',
     visibility: 'public',
-    game: 'PUDGY_PARTY',
+    game: 'NFL_RIVALS',
+    game_mode: 'SEASON',
     mode: 'LEADERBOARD',
     leaderboard_config: {
-      score_by: 'TOP10_COUNT',
+      score_by: 'POINTS_SCORED',
       higher_is_better: true,
       time_window: {
         start_utc: '2025-01-10T10:00:00Z',
@@ -223,24 +228,25 @@ export const mockTournaments: Tournament[] = [
       dev_fee_wallet: 'DevMythWallet123456789012345678901234567890',
       organizer_fee_wallet: 'OrgMythWallet123456789012345678901234567890'
     },
-    state: 'ENDED',
+    state: 'LIVE',
     created_by: 'user_202',
     allow_user_generated: true,
     dispute_window_hours: 24,
-    description: 'Fast-paced Rocket League tournament with amazing rewards',
-    participants: 48,
+    description: 'Dominate the gridiron in the ultimate NFL Rivals season championship! Score the most points across multiple games to claim the title.',
+    participants: 42,
     created_at: '2025-01-01T08:00:00Z',
     updated_at: '2025-01-10T17:00:00Z'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440006',
-    title: 'Apex Legends Arena',
-    slug: 'apex-legends-arena',
+    title: 'Playoff Touchdown Challenge',
+    slug: 'playoff-touchdown-challenge',
     visibility: 'public',
-    game: 'PUDGY_PARTY',
+    game: 'NFL_RIVALS',
+    game_mode: 'PLAYOFFS',
     mode: 'LEADERBOARD',
     leaderboard_config: {
-      score_by: 'CUSTOM_METRIC',
+      score_by: 'TOUCHDOWNS',
       higher_is_better: true,
       time_window: {
         start_utc: '2025-01-30T15:00:00Z',
@@ -273,7 +279,7 @@ export const mockTournaments: Tournament[] = [
     created_by: 'user_303',
     allow_user_generated: true,
     dispute_window_hours: 24,
-    description: 'Intense Apex Legends battle royale tournament',
+    description: 'Score the most touchdowns in this high-stakes NFL Rivals playoff tournament! Every touchdown counts in this intense gridiron showdown.',
     participants: 12,
     created_at: '2025-01-18T13:00:00Z',
     updated_at: '2025-01-19T10:00:00Z'
@@ -323,3 +329,4 @@ export function tournamentToCardData(tournament: Tournament): TournamentCardData
 }
 
 // Export converted data for immediate use
+// MOCK: Replace with API call to /api/challenges
