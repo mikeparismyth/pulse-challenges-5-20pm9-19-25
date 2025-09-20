@@ -1,3 +1,8 @@
+// ENGINEER HANDOFF: This file contains centralized mock tournament data
+// Replace entire mockTournaments array with API call to /api/challenges
+// All components now use this single source of truth
+// Tournament data structure matches PRD specifications exactly
+
 import { Tournament, TournamentCardData, TournamentState } from './types';
 
 // MOCK: Replace with API call to /api/challenges

@@ -7,25 +7,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { mockTournaments } from '@/lib/mockData';
 
-// MOCK: Replace with API call to /api/challenges/featured
-interface FeaturedChallenge {
-  id: string;
-  title: string;
-  game: string;
-  status: 'LIVE' | 'UPCOMING';
-  participants: number;
-  maxParticipants: number;
-  prizePool: string;
-  timeRemaining: string;
-  heroImage: string;
-  gradient: string;
-}
-
 export default function FeaturedChallengesCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  // Featured challenges - prioritize LIVE then UPCOMING by participant count
+  // MOCK: Replace with API call to /api/challenges/featured
   const featuredChallenges = mockTournaments
     .filter(t => t.state === 'LIVE' || t.state === 'UPCOMING')
     .slice(0, 4)

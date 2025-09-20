@@ -151,7 +151,10 @@ export default function Challenges() {
               transition={{ delay: index * 0.1 }}
             >
               <Link href={`/challenge/${tournament.id}`}>
-                <TournamentCard {...tournament} />
+                <TournamentCard 
+                  {...tournament} 
+                  gameType={mockTournaments.find(t => tournamentToCardData(t).id === tournament.id)?.game}
+                />
               </Link>
             </motion.div>
           ))}

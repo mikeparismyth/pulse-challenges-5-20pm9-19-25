@@ -1,3 +1,8 @@
+// ENGINEER HANDOFF: PRD-compliant Challenge model ready for API integration
+// GameType enum supports PUDGY_PARTY and NFL_RIVALS with extensible architecture
+// GAME_MODE_CONFIGS provides game-specific configuration for UI components
+// All TypeScript interfaces match backend webhook schemas exactly
+
 // Tournament Data Types - Based on PRD Specifications
 
 export type ChainType = 'ABSTRACT' | 'SOLANA' | 'ETHEREUM';
