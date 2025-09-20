@@ -217,6 +217,61 @@ export function isNFLRivalsMode(mode: string): mode is NFLRivalsModeType {
   return ['SEASON', 'PLAYOFFS', 'TOURNAMENT'].includes(mode);
 }
 
+// Game Platform Requirements System
+export const GAME_PLATFORM_REQUIREMENTS: Record<GameType, 'MYTHICAL'[]> = {
+  PUDGY_PARTY: ['MYTHICAL'],
+  NFL_RIVALS: ['MYTHICAL']
+};
+
+// Helper functions for game platform requirements
+export function getRequiredPlatformForGame(game: GameType): 'MYTHICAL'[] {
+  return GAME_PLATFORM_REQUIREMENTS[game] || [];
+}
+
+export function hasRequiredPlatform(userPlatforms: GamePlatformAccount[], game: GameType): boolean {
+  const requiredPlatforms = getRequiredPlatformForGame(game);
+  if (requiredPlatforms.length === 0) return true; // No requirements
+  
+  return requiredPlatforms.some(requiredPlatform => 
+    userPlatforms.some(userPlatform => 
+      userPlatform.provider === requiredPlatform && 
+      userPlatform.games.includes(game)
+    )
+  );
+}
+
+export function validatePlatformRequirement(userPlatforms: GamePlatformAccount[], game: GameType): {
+  isValid: boolean;
+  missingPlatforms: string[];
+  message?: string;
+} {
+  const requiredPlatforms = getRequiredPlatformForGame(game);
+  
+  if (requiredPlatforms.length === 0) {
+    return { isValid: true, missingPlatforms: [] };
+  }
+  
+  const missingPlatforms = requiredPlatforms.filter(requiredPlatform => 
+    !userPlatforms.some(userPlatform => 
+      userPlatform.provider === requiredPlatform && 
+      userPlatform.games.includes(game)
+    )
+  );
+  
+  const isValid = missingPlatforms.length === 0;
+  const message = isValid ? undefined : 
+    `This challenge requires a linked ${missingPlatforms.join(' or ')} account with ${game.replace('_', ' ')} access.`;
+  
+  return { isValid, missingPlatforms, message };
+}
+
+// Development testing - expose functions to window for console access
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  (window as any).getRequiredPlatformForGame = getRequiredPlatformForGame;
+  (window as any).hasRequiredPlatform = hasRequiredPlatform;
+  (window as any).validatePlatformRequirement = validatePlatformRequirement;
+}
+
 // Authentication and User Types - PRD Section 3.6 compliant
 export type SigninMethod = 'email' | 'sms' | 'metamask' | 'coinbase' | 'rainbow' | 'walletconnect' | 'phantom' | 'google' | 'discord' | 'abstract';
 
