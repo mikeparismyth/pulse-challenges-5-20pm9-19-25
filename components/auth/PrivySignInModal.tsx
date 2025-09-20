@@ -6,6 +6,7 @@ import { X, Mail, Smartphone, Wallet, ArrowLeft, Loader2, Check, User } from 'lu
 import { Button } from '@/components/ui/button';
 import { useAuth, mockUser } from '@/lib/auth';
 import { toast } from 'sonner';
+import ConnectGameAccountModal from './ConnectGameAccountModal';
 
 // Map display names to signin method keys
 const mapToSigninMethod = (displayName: string): 'email' | 'sms' | 'metamask' | 'coinbase' | 'rainbow' | 'walletconnect' | 'phantom' | 'google' | 'discord' => {
@@ -30,7 +31,7 @@ interface PrivySignInModalProps {
   onSuccess: () => void;
 }
 
-type SignInStep = 'main' | 'sms' | 'email-otp' | 'sms-otp' | 'wallets' | 'more-wallets' | 'loading' | 'username-setting' | 'success';
+type SignInStep = 'main' | 'sms' | 'email-otp' | 'sms-otp' | 'wallets' | 'more-wallets' | 'loading' | 'username-setting' | 'game-account-modal' | 'success';
 
 export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySignInModalProps) {
   const [step, setStep] = useState<SignInStep>('main');
@@ -141,7 +142,6 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
     }
     
     setIsLoading(true);
-    setStep('loading');
     
     // MOCK: Replace with API call to save username
     setTimeout(() => {
@@ -158,12 +158,12 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
         localStorage.setItem('pulse_user_usernames', JSON.stringify(usernames));
       }
       
-      setStep('success');
-      setTimeout(() => {
-        login(currentOTPMethod, username);
-        onSuccess();
-        toast.success('Account created successfully!');
-      }, 1500);
+      // Complete authentication BEFORE game modal
+      login(currentOTPMethod, username);
+      
+      // Then show game account modal (optional)
+      setStep('game-account-modal');
+      setIsLoading(false);
     }, 2000);
   };
 
@@ -758,6 +758,21 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
     }
   };
 
+  const handleGameAccountSuccess = () => {
+    setStep('main'); // Reset step before calling onSuccess
+    onSuccess(); // This closes the entire auth modal and goes to home
+  };
+
+  const handleGameAccountSkip = () => {
+    setStep('main'); // Reset step before calling onSuccess
+    onSuccess(); // This closes the entire auth modal and goes to home
+  };
+
+  const handleGameAccountClose = () => {
+    setStep('main'); // Reset step before calling onSuccess
+    onSuccess(); // This closes the entire auth modal and goes to home
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -812,6 +827,14 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
           </div>
         </>
       )}
+
+      {/* Game Account Modal - Only for new users */}
+      <ConnectGameAccountModal
+        isOpen={step === 'game-account-modal'}
+        onClose={handleGameAccountClose}
+        onSuccess={handleGameAccountSuccess}
+        onSkip={handleGameAccountSkip}
+      />
     </AnimatePresence>
   );
 }
