@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Settings, Wallet, Key, LogOut, Copy } from 'lucide-react';
-import { User } from '@/lib/auth';
+import { User, useAuth } from '@/lib/auth';
 import { useWalletConnections } from '@/lib/useWalletConnections';
 
 interface ProfileDropdownProps {
@@ -13,11 +13,18 @@ interface ProfileDropdownProps {
 
 export default function ProfileDropdown({ user, onClose, onSignOut }: ProfileDropdownProps) {
   const { formatWalletAddress } = useWalletConnections();
+  const { pulseUser } = useAuth(); // Move useAuth to component level
   
   const copyWalletAddress = () => {
-    const primaryWallet = user.connectedWallets.find(w => w.id === 'pulse') || user.connectedWallets[0];
-    if (primaryWallet) {
-      navigator.clipboard.writeText(primaryWallet.address);
+    if (!pulseUser) return;
+    
+    // Get primary wallet address from PulseUser structure
+    const primaryAddress = pulseUser.primaryWallets.evmOrAbstract || 
+                          pulseUser.wallets.embeddedEvm?.address ||
+                          pulseUser.wallets.externals[0]?.address;
+    
+    if (primaryAddress) {
+      navigator.clipboard.writeText(primaryAddress);
       // In real app, show toast notification
     }
   };
@@ -99,33 +106,34 @@ export default function ProfileDropdown({ user, onClose, onSignOut }: ProfileDro
           
           {/* Wallet Address */}
           <div className="mt-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700/30">
-            {user.connectedWallets.length > 0 ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-gray-400 text-xs mb-1">Primary wallet</div>
-                  <div className="text-white text-sm font-mono">
-                    {formatWalletAddress(user.connectedWallets[0].address)}
+            {(() => {
+              const primaryAddress = pulseUser?.primaryWallets.evmOrAbstract || 
+                                    pulseUser?.wallets.embeddedEvm?.address ||
+                                    pulseUser?.wallets.externals[0]?.address;
+              
+              return primaryAddress ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-gray-400 text-xs mb-1">Primary wallet</div>
+                    <div className="text-white text-sm font-mono">
+                      {formatWalletAddress(primaryAddress)}
+                    </div>
                   </div>
+                  <motion.button
+                    onClick={copyWalletAddress}
+                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-md transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </motion.button>
                 </div>
-                <motion.button
-                  onClick={copyWalletAddress}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-md transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Copy className="w-4 h-4" />
-                </motion.button>
-              </div>
-            ) : (
-              <div className="text-center text-gray-400 text-sm">
-                No wallets connected
-              </div>
-            )}
-            {user.connectedWallets.length > 0 && user.connectedWallets[0].balance && (
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {user.connectedWallets[0].balance.eth} ETH (${user.connectedWallets[0].balance.usd})
-              </div>
-            )}
+              ) : (
+                <div className="text-center text-gray-400 text-sm">
+                  No wallets connected
+                </div>
+              );
+            })()}
           </div>
         </div>
 
