@@ -1,5 +1,9 @@
 'use client';
 
+// ENGINEER HANDOFF: Component now uses centralized game themes
+// gameType prop eliminates hardcoded game detection issues
+// Ready for real tournament data via props - no component changes needed
+
 import { motion } from 'framer-motion';
 import { Clock, Trophy, Users, Gamepad2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

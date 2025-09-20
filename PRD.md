@@ -1,9 +1,9 @@
 # **Pulse Challenges — Web App POC PRD (Next.js + Privy + Abstract)**
 
 **Owner:** Michael Paris \
-**Contributors:** Product, Platform, Wallet, Data, Legal/Compliance \
-**Last updated:** Sept 4, 2025 \
-**Status:** Draft v0.1
+**Contributors:** Michael, John, Martin, Cameron, Tyson, Platform Team, and Others \
+**Last updated:** Sept 19, 2025 \
+**Status:** Draft v0.6
 
 
 ---
@@ -127,11 +127,34 @@ Key differences from the prior MVP:
 ## **3) Authentication & Account Linking**
 
 
+### **3.0 Wallet Bootstrapping (Auto-Provision)**
+
+On first successful Privy sign-in, the app **auto-provisions** embedded wallets so every user can transact immediately:
+
+
+
+* **Embedded EVM wallet** (non-custodial, **exportable**) \
+
+* **Embedded Solana wallet** (non-custodial, **exportable**) \
+
+
+**Abstract Global Wallet (AGW)** is **optional**:
+
+
+
+* If the user signs in with **Abstract** (Privy/Abstract provider), their AGW is created/linked during auth. \
+
+* Otherwise, users can **add AGW later** via **Profile → Linked Wallets → “Connect Abstract”** (consent pop-up). \
+
+
+**Acceptance Criteria:** After first login, **Linked Wallets** shows **Embedded EVM** and **Embedded Solana**; AGW appears only if the user signed in with Abstract or links it later.
+
+
 ### **3.1 Login Methods**
 
 
 
-* Enable: **Email OTP**, **Passkey/WebAuthn**, **Discord**, **Google**, **Wallet (SIWE/SIWS)**. \
+* **Enabled sign-in methods (Privy):** Email OTP, Passkey/WebAuthn, **Google, Discord, X (Twitter), Telegram**, Wallet (SIWE/SIWS). *(Apple optional, later.)* \
 
 * Progressive onboarding: allow browse → prompt to authenticate at join/payout actions. \
 
@@ -139,16 +162,48 @@ Key differences from the prior MVP:
 
 ### **3.2 User Object & Linking**
 
+ A Pulse user may link multiple wallets and identities.** \
+**
 
 
-* Single user may attach: **many wallets** (EVM + Solana), **one email**, **many passkeys**. \
 
-* **Mythical Account linking** (FusionAuth OAuth): \
+* **Profile: **`username` (required, unique).
+* **Wallets:** Embedded **EVM** (auto), Embedded **Solana** (auto), optional **Abstract Global Wallet** (add later), external EVM/Solana wallets. \
 
-    * Start link → FusionAuth OAuth consent → redirect back with code → exchange for token → store user↔Mythical mapping with scopes (game stats read). \
+* **Game Platforms:** zero or more **platform accounts** (v0: **Mythical**). Each mapping stores `{provider, accountId, displayName, games[]}`. \
 
-    * Unlink revokes token & marks data stale. \
+* **Linked Wallets (Profile):** list/copy addresses; per-wallet balances & total (USD est.); **export keys for embedded only**; link/unlink externals; **Connect Abstract** CTA. \
 
+* **Game Platforms (Profile):** link/unlink Mythical; show displayName and covered games; re-link on token expiry. \
+
+* **Primary Wallets (per network):** user selects Primary **EVM/Abstract** and **Solana**; used for Join/Create/Seed/Payouts (overrideable per action). \
+
+* **Abstract fallback:** if no Abstract wallet is linked, use **Embedded EVM** on Abstract L2 by default.
+
+**See also:** **3.6 Pulse User Object (Reference)** for the canonical API/DB shape used across the app.
+
+**3.2a Social Accounts (Privy native module) \
+ \
+Goal.** Let users link/revoke social sign-in methods using Privy’s built-in “Linked Accounts” experience.
+
+**Scope (MVP, native only)**
+
+
+
+* **Providers enabled in Privy dashboard:** **Google, Discord, X (Twitter), Telegram**. *(Apple optional, later.)*
+* **Manage flow:** one **“Manage Social Accounts”** button opens the **Privy modal**. All link/unlink UX is handled **inside Privy**.
+* **Guardrail:** Users must have **≥1** sign-in method on file. If only one remains, **Privy disallows unlink** (UI shows a warning and blocks).
+* **Storage/source of truth:** `user.linkedAccounts` from **Privy**. **No Pulse DB table** is required in MVP.
+* **Refresh:** after link/unlink, refresh the Privy user object (client) and session as needed. \
+
+
+**Acceptance Criteria**
+
+
+
+* Users can link/unlink Google, Discord, X, Telegram via native supported **Privy modals**.
+* The app does **not** allow unlink if it would leave **0** sign-in methods.
+* Settings shows a single **Manage Social Accounts** entry; no per-provider UI is required.
 
 
 ### **3.3 Sessions & Security**
@@ -170,42 +225,148 @@ Key differences from the prior MVP:
 * User can login with OTP/Discord/Google, link ≥1 EVM wallet and Phantom, view all under **Profile → Linked Wallets**; sign a test message; export embedded key. \
 
 * Logging out invalidates the app JWT; refresh is required for new actions.
+* A blocking **Choose Username** step runs immediately after first login; users cannot proceed until a valid, unique username is set.
 
-
-### **3.5 Mythical Account Linking Flow**
-
-**Requirement**: Users can **browse** challenge listings without linking a game account. **Join** is blocked until game account (i.e. Mythical Account) is linked. (required for scoring/leaderboard data).
-
-**Technical Flow:**
+**3.5a Pulse Username (MVP)**
 
 
 
-1. **Post-Privy Auth**: After successful Privy login, check if user has linked Mythical account
-2. **Blocking Modal**: If not linked, show "Connect Your Game Account" modal (cannot dismiss)
-3. **OAuth Initiation**: Click "Connect Mythical" → Redirect to FusionAuth OAuth consent screen
-4. **OAuth Scopes**: Request `profile:read`, `gameplay:read` for username + match data access
-5. **Callback Handling**: `/api/mythical/oauth/callback` → Exchange code for access token
-6. **Profile Fetch**: Call Mythical API to get `displayName` (Pudgy username, NFL Rivals username, etc.)
-7. **Database Storage**: Store `mythicalAccountId`, `displayName`, `accessToken` (encrypted), `refreshToken`
-8. **Unlock App**: User can now access challenge listings and join flows
+* After first successful Privy sign-in, users must set a unique **Pulse username** (handle) — e.g., `pengu_pro`.
+* **Blocking step:** Users cannot enter the app or link a game account until a valid, unique username is saved.
+* **Rules**
+* Pattern: `^[a-z][a-z0-9_]{2,19}$` (3–20 chars, starts with a letter; lowercase letters, numbers, underscores only).
+* Case-insensitive uniqueness (store a normalized lowercase).
+* Reserved list rejected: `admin, mod, pulse, support, team, owner, abstract, eth, sol, null, undefined` (extendable).
+* **UX \
+**
+    * Modal: **“Choose your username”** with inline availability check. \
 
-**Error Handling:**
+    * On success, continue to **Connect Your Game Account** (non-blocking).
+* **Storage**
+    * Source of truth: DB columns `users.username` (displayed as typed) and `users.username_normalized` (lowercase, unique index).
+    * Optional mirror to Privy custom metadata `{ username }` for client convenience (failure to mirror must not block). \
 
-
-
-* OAuth rejection → Show retry modal with support contact
-* API failures → Temporary "Try Again" with fallback to support email
-* Token expiry → Auto-refresh on webhook failures, re-prompt user if refresh fails
-
-**Acceptance Criteria:**
-
+* **Changes**
+    * **MVP:** username is **immutable** (no self-serve changes).
 
 
-* New users cannot access challenge listings without Mythical link
-* Profile shows linked Mythical username
-* Webhook payload matching works via `mythicalAccountId`
-* Unlink option in Profile → clears tokens, blocks app access until re-link \
+### **3.5b Game Platform Linking (Mythical v0**
 
+**Precondition: **Username has been set** \
+ \
+Requirement:** Users can **browse** challenge listings without linking a game account. **Join** is **blocked** until the **required game platform** (e.g., **Mythical** for Pudgy Party) is linked.
+
+**Post-Privy Auth (non-blocking): \
+** After successful login, show a **“Connect Your Game Account”** modal: \
+ • **Connect Mythical** (CTA) — proceeds to OAuth \
+ • **Maybe later** — dismisses modal; user can browse freely (Join still requires link)
+
+**Per-Challenge gating: \
+** When user taps **Join**, if the challenge **requires a platform** that is not linked (e.g., `required_platform = MYTHICAL`), show the same connect modal **inline** and **block Join** until linking completes.
+
+**OAuth (Mythical / FusionAuth):**
+
+
+
+1. Redirect to FusionAuth with scopes: `profile:read`, `gameplay:read`. \
+
+2. Callback: `POST /api/platforms/mythical/oauth/callback` (code exchange). \
+
+3. Persist a **GamePlatformAccount** record: \
+ `{ provider: 'MYTHICAL', accountId, displayName, games: ['PUDGY_PARTY','NFL_RIVALS'] } \
+`
+4. Mark user → platform mapping active; refresh eligibility checks. \
+
+
+**Unlink:** Revokes tokens & marks mapping inactive; **Join** is blocked for games requiring that platform.
+
+**Error handling: \
+** OAuth rejected → retry prompt with support link. \
+ Token refresh fails → prompt re-link at next Join/Leaderboard view.
+
+**Acceptance Criteria: \
+** • Users can **browse without linking**. \
+ • If a challenge **requires Mythical**, Join is **blocked** until linked. \
+ • Profile shows a **linked Game Platform** card with displayName and provider. \
+ • Webhook payloads (e.g., `mythicalAccountId`) resolve via the **GamePlatformAccount** mapping.
+
+ \
+**3.6 Pulse User Object (Reference)**
+
+This is the canonical shape the app exposes internally (TypeScript/DB) and returns from `/v1/profile`. It composes username, wallets (embedded + external), per-network primary payout wallets, linked game platforms (e.g., Mythical), and social accounts (via Privy). See **3.2 User Object & Linking** for behaviors and UI, and **3.5a/3.5b** for username & game-platform requirements. 
+
+
+```
+type PulseUser = {
+  id: string
+  createdAt: string
+  // Identity
+  username: string                 // required at first login (immutable in MVP)
+  usernameNormalized: string       // lowercase, unique
+  // Wallets
+  wallets: {
+    embeddedEvm?: { address: string }          // auto-provisioned
+    embeddedSol?: { address: string }          // auto-provisioned
+    abstract?: { address: string }             // AGW if user signed in w/ Abstract or linked later
+    externals: Array<{
+      chain: "evm" | "solana"
+      address: string
+      label?: string                           // e.g., "MetaMask", "Phantom"
+    }>
+  }
+  primaryWallets: {
+    evmOrAbstract?: string                     // payout default for EVM/Abstract
+    solana?: string                            // payout default for Solana
+  }
+  // Game Platforms (Mythical v0)
+  gamePlatforms: Array<{
+    provider: "MYTHICAL"
+    accountId: string
+    displayName?: string
+    games: string[]                            // e.g., ["PUDGY_PARTY","NFL_RIVALS"]
+    linkedAt: string
+  }>
+  // Social Accounts (Privy source of truth)
+  socialAccounts: {
+    source: "privy"
+    linkedAccounts: any[]                      // pass-through from Privy user.linkedAccounts
+    hasAny: boolean
+  }
+  // Eligibility helpers (derived flags used by UI flows)
+  eligibility: {
+    hasUsername: boolean
+    hasRequiredPlatformForChallenge?: boolean  // computed per viewed challenge
+  }
+  // Preferences
+  preferences: {
+    notifications?: Record<string, boolean>    // toast categories on/off
+  }
+  // Contract refs (challenge-level mapping lives on challenge rows)
+  walletPref?: {                               // DB WalletPref
+    evmPayoutAddr?: string
+    solPayoutAddr?: string
+  }
+}
+```
+
+
+**Notes & references**
+
+
+
+* Username is **blocking** at first login (immutable in MVP). \
+Embedded EVM + Embedded Solana are **auto-provisioned**; Abstract Global Wallet is **optional** and may be linked later.
+* Game platform linking is **required to Join** per challenge rules (e.g., Mythical for Pudgy Party).
+* Social accounts are managed **entirely in Privy’s modal**; we just reflect `linkedAccounts`. \
+
+
+**Acceptance criteria**
+
+
+
+* `/v1/profile` returns the structure above (fields may be `null/undefined` if not set).
+* UI components (Join, Create, Profile) rely on `primaryWallets` and `eligibility` flags for gating.
+* No duplication between DB and Privy: socials come from Privy; username/wallet prefs from DB.
 
 
 ---
@@ -250,22 +411,29 @@ Key differences from the prior MVP:
 
 
 
-* **Embedded EVM wallet** (Privy) auto‑provisioned on login (configurable) with **key export** in **Profile**. \
-
-* **External EVM wallets**: MetaMask, Rainbow, Coinbase Wallet via connectors. \
-
-* **Solana wallets**: Phantom et al. (link for holding/prizes; writes post‑MVP if required). \
-
-
-
-### **4.3 Preferred Payout Wallets**
+* **Embedded EVM (Privy)** — auto-provisioned; **exportable**.
+* **Embedded Solana (Privy)** — auto-provisioned; **exportable**.
+* **Abstract Global Wallet (AGW)** — **optional**; created when signing in with Abstract or later via “Connect Abstract”; **no private key export** (smart wallet).
+* **External EVM wallets** — MetaMask, Rainbow, Coinbase Wallet (Privy connectors). \
+**External Solana wallets** — Phantom, etc. \
 
 
+**4.3 Primary Wallets (per network) \
+ \
+** In **Profile → Linked Wallets**, the user selects:
 
-* In **Profile → Payouts**, user selects **preferred wallet per network** (EVM/Abstract; Solana). \
 
-* If unset, default to embedded EVM wallet on Abstract for MYTH payouts. Solana payouts require Phantom linked. \
 
+* **Primary EVM/Abstract** (default = **Embedded EVM**; can be AGW or any linked EVM)
+* **Primary Solana** (default = **Embedded Solana**)
+
+**Usage:**
+
+
+
+* **Join** and **Create/Seed** default to the **Primary** for the challenge’s network; users can switch wallet inline.
+* **Payouts** are sent to the **Primary** of that network at settlement.
+* **Abstract fallback:** if no AGW/external Abstract is linked, **Embedded EVM** is offered and used for Abstract challenges. 
 
 
 ### **4.4 Multi-Network Wallet Support**
@@ -286,6 +454,7 @@ Key differences from the prior MVP:
 * Show wallet switcher filtered to compatible wallets only
 * If no compatible wallets linked: Prompt "Connect [Network] Wallet" → Privy connector flow
 * Fallback: Use embedded wallet (supports all EVM networks via RPC switching)
+* If no Abstract wallet is linked, offer **Embedded EVM (Abstract L2)** as the default option; user may still link AGW later.
 
 **Scenario 2: External wallet on wrong network**
 
@@ -298,15 +467,12 @@ Key differences from the prior MVP:
 
 
 
-* Challenge cards show network badge (e.g., "Abstract L2", "Solana")
+* Challenge detail pages show network badge (e.g., "Abstract L2", "Solana")
 * Entry fee displays include network: "10 MYTH on Abstract L2"
 * Wallet selector shows network compatibility: "MetaMask ✓ Abstract" vs "MetaMask ✗ Solana"
+* The wallet selector shows a **“Primary”** tag on the per-network default. 
 
-**Acceptance Criteria**: Users can always join challenges regardless of wallet/network mismatches through guided flows
-
-
-
-*  \
+**Acceptance Criteria**: Users can always join challenges regardless of wallet/network mismatches through guided flows \
 
 
 
@@ -328,6 +494,8 @@ Key differences from the prior MVP:
 
 * `game` = PUDGY_PARTY (v0; enum allows future games) \
 
+* `required_platform = MYTHICAL` *(derived from game; used to gate Join)* \
+
 * `mode` = LEADERBOARD \
 
 * **Leaderboard config \
@@ -343,7 +511,7 @@ Key differences from the prior MVP:
     * `entry_token = { chain: ABSTRACT | SOLANA | ETHEREUM, symbol, tokenAddr/mint, decimals }`
     * `entry_fee (min units)`
     * `prize_token = entry_token (MUST match - same token, same network)` \
-`max_participants` (optional) \
+`max_joiners `(optional) \
 
 * **Fees \
 **
@@ -524,6 +692,8 @@ Key differences from the prior MVP:
 Entry and payout use the same ERC-20 token (no in-flow conversion).
 <p>
 (Aligns with the TEP join/settle math: single token per challenge.)
+<p>
+<strong>MVP gating:</strong> Only <strong>Abstract L2 ERC-20</strong> tokens are enabled (e.g., MYTH, USDC, WETH, PENGU on Abstract). <strong>ETH (native)</strong> and <strong>SOL</strong> are <strong>disabled</strong> in v0.
    </td>
   </tr>
   <tr>
@@ -538,6 +708,20 @@ Entry and payout use the same ERC-20 token (no in-flow conversion).
    <td><strong>Never after Publish</strong>
    </td>
    <td>Must be valid combo (see combos)
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Required Game Platform</strong>
+   </td>
+   <td>Platform needed for Join | <strong>System (derived)</strong>
+   </td>
+   <td>System (derived)
+   </td>
+   <td>Auto
+   </td>
+   <td><strong>Never after Publish</strong>
+   </td>
+   <td>Set from <strong>Game</strong> (v0: PUDGY_PARTY ⇒ MYTHICAL). Shown as read-only.
    </td>
   </tr>
   <tr>
@@ -794,7 +978,7 @@ Supported Token ↔ Network Combos**
 
 
 
-* Title, start/end times, entry fee amount, prize token configuration, max participants, organizer fee percentage, visibility settings
+* Title, start/end times, entry fee amount, prize token configuration, max joiners, organizer fee percentage, visibility settings
 
 **Never Editable After Publishing:**
 
@@ -831,7 +1015,7 @@ Supported Token ↔ Network Combos**
 
 
 
-* **Join drawer** shows: Entry Fee, Token/Network, Prize Pool estimate, Fees (Dev + Organizer), Deadline, and **Selected Wallet** (switcher). \
+* **Join drawer** shows: Entry Fee, Token/Network, Prize Pool estimate, Fees (Dev + Organizer), Deadline, and **Selected Wallet** (switcher). The **Selected Wallet** defaults to the **Primary** for the challenge’s network (EVM/Abstract vs. Solana) and only shows **compatible wallets**; users can switch. If the **required platform** for the challenge isn’t linked, a **Connect Game Account** modal appears and **Join is blocked** until linking completes. The modal is dismissible outside the Join flow. \
 
 * **First‑time**: prompt to link wallet(s); otherwise default to user’s preferred EVM wallet. \
 
@@ -843,7 +1027,7 @@ Supported Token ↔ Network Combos**
 
 * For ERC‑20 entry: \
 
-    * Estimate gas costs for approve + join transaction  → If first time, prompt **Permit2** approval (fallback to approve if needed) → Display total cost (entry fee + estimated gas) to user→  Check allowance → trigger **approve** (or permit if supported) → call the **challenge escrow’s** `join(entryFee, permitOrApprove)`. \
+    * use the **Primary EVM/Abstract** wallet (or the user’s selection) → estimate gas for approve/permit + join → prompt **Permit2** (fallback to `approve`) → ensure allowance → call the **challenge escrow’s** `join(entryFee, permitOrApprove)`.  \
 
 * Guards (on-chain):
     * One entry per wallet
@@ -873,7 +1057,7 @@ Supported Token ↔ Network Combos**
 
 
 1. **ERC-20 Approval**: Use `eth_estimateGas` for `approve(spender, amount)` call
-2. **Join Transaction**: Estimate gas for `join(challengeId)` contract call
+2. **Join Transaction**: Estimate gas for **join(entryFee, permitOrApprove)** on the challenge escrow
 3. **Total Cost Calculation**: Entry fee + (gas estimate × current gas price)
 4. **Gas Price Source**: Network's suggested gas price (fast/standard tier)
 
@@ -962,10 +1146,8 @@ At settlement, Pulse commits a **Merkle root** + **resultsURI (IPFS/Arweave)** f
 
 * **Primary**: Pudgy Party **server → webhook** to Challenges API with signed JWT (shared secret/rotating keys). Payload includes `mythicalAccountId`, `matchId`, `placements[]`, `coins`, `timestamp`.
 * **Authentication & Mapping:**
-    * **Webhook Security**: Shared secret HMAC signature verification + rotating JWT tokens
-    * **Payload Validation**: Verify `challengeId` exists and is in LIVE state
-    * **User Mapping**: `mythicalAccountId` from webhook → lookup linked Pulse user via OAuth mapping table
-    * **Username Validation**: Cross-reference webhook `mythicalAccountId` with stored `displayName` for audit trail
+    * **User Mapping:** `platformAccountId` (e.g., `mythicalAccountId`) → lookup user via **GamePlatformAccount** mapping `{provider, accountId}`.
+    * **Username Validation:** Cross-reference platform `accountId` with stored `displayName` for audit trail.
 * **Idempotency & Deduplication:**
     * **Match ID Uniqueness**: `matchId` serves as idempotency key per challenge
     * **Upsert Logic**: New match → insert; duplicate `matchId` → update existing aggregates
@@ -986,8 +1168,8 @@ At settlement, Pulse commits a **Merkle root** + **resultsURI (IPFS/Arweave)** f
 
 
 
-* Leaderboard updates in near‑real time; ties broken by earliest achievement; downloadable CSV; winner preview matches the final payout set. \
-
+* Leaderboard updates in near‑real time; ties broken by earliest achievement; downloadable CSV; winner preview matches the final payout set.
+* Leaderboard UI: **Name shown** = <code>username </code>**and avatar image**
 
 
 ---
@@ -1060,15 +1242,11 @@ At settlement, Pulse commits a **Merkle root** + **resultsURI (IPFS/Arweave)** f
 
 
 
-* At **END**: \
-
-    1. Server computes winners & shares; obtains admin review. \
-
-    2. Server calls TEP (or our escrow): `settle(tournamentId, winners[], amounts[], feeRecipients[])` from operator. \
-
-    3. Contract emits Payout events; UI updates state to **SETTLED**. \
-
-* User receives tokens to **preferred payout wallet** for that network. \
+* **At END:**
+    1. Server computes winners & shares (**post-fee**) and obtains admin review.
+    2. Server calls the escrow: **<code>settle(winners[], resultsRoot, resultsURI)</code>**.
+    3. Contract emits **ResultsCommitted → FeePaid → WinnerPaid → Settled**; UI updates state to **SETTLED**.
+    4. User receives tokens to the **Primary** payout wallet for that network.  \
 
 
 
@@ -1363,7 +1541,11 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 * `wallet_linked` { chain, wallet_type, is_default } \
 
-* `mythical_linked` { scopes } \
+* `username_set { length } \
+`
+* `join_blocked_missing_game_platform { challenge_id }` \
+
+* `platform_linked `{ provider: 'MYTHICAL', scopes } \
 
 * `challenge_created` { id, game, score_by, entry_token, fee_bps } \
 
@@ -1404,12 +1586,13 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 
 
-1. User lands on home page (browsable without auth)
-2. Click **Sign In** → Privy modal opens with method selection
-3. **First-time users**: Choose method → complete auth → Privy auto-provisions embedded EVM wallet
-4. **Returning users**: Sign in → access existing linked wallets/accounts
-5. **Post-auth**: Route to Challenges Home with user pill modal in nav/drawer displaying embedded privy wallet address
-6. **Progressive onboarding**: Prompt for additional wallet linking and Mythical Account connection (Mythical account connection required, wallet linking optional, as Privy auto-provisions a privy wallet)
+1. User lands on Home (browsable without auth).
+2. Click **Sign In** → Privy modal (Email OTP, Passkey, Discord, Google, Wallet, **Abstract**).
+3. First-time users: complete auth → app **auto-provisions** **Embedded EVM** and **Embedded Solana** wallets.
+4. If user signs in via **Abstract**, their **AGW** is created/linked during auth. Otherwise, they can **Connect Abstract** later in **Linked Wallets**.
+5. **Required to complete registration:** **Choose your username** → validate + save (server enforces uniqueness).
+6. **Not required to complete registration:** **Connect Your Game Account** (can skip; Join/Create will require per-challenge platform).
+7. **Post-auth:** route to Challenges Home; user pill shows the **Embedded EVM** address; prompt to **link a game account (Mythical** Account) (required before Join Challenge)
 
 **Privy Cross-App Ecosystem Integration:**
 
@@ -1443,19 +1626,30 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 * **Linked Accounts**: View/manage social logins (Apple, Google, Discord)
 * **Security**: MFA setup, passkey management, password changes
-* **Wallets**: View linked external wallets, export embedded wallet private key
+* **Wallets**: View linked external wallets
+    * **Export private key** for **Embedded EVM** and **Embedded Solana** only. **AGW and external wallets**: *no key export*.
 * **Sessions**: Active device management, logout options
+* **Connect Abstract**: create/link your Abstract Global Wallet (optional). If skipped, Abstract challenges use **Embedded EVM** by default. 
 
 **Custom Pulse Settings (our UI):**
 
 
 
-* **Preferred Payout Wallets**: Set default per network (EVM/Abstract, Solana)
+* **Username: **shows the current username. *(MVP: read-only; change disabled).*
+* **Avatar (optional, future): **upload image, crop/preview.
+* **Primary Wallet**: Set default per network (EVM/Abstract, Solana)
 * **Notifications**: Opt-in/out of toast notifications per event type
-* **Mythical Account Linking**: Connect/disconnect OAuth integration
+* **Game Platforms (Mythical, etc.):** Link/unlink platform accounts; show displayName & games; re-link on token expiry.
+* **Social Accounts:** **Manage Social Accounts** (opens Privy modal). Linking/revoking happens inside Privy; after completion, the app refreshes the current user. 
 
 
 ### **15.3 Join Challenge Flow (Transaction Signing)**
+
+**Eligibility Check:** 
+
+
+
+1. If `required_platform` is not linked for the user, prompt Connect Game Account (Mythical); upon success, continue to wallet selection; otherwise, cancel Join.
 
 **Wallet Selection:**
 
@@ -1528,7 +1722,7 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 * Each published challenge maps to unique escrow contract instance
 * Entry fees flow to challenge-specific escrow address
-* Settlement calls reference escrowId for payout distribution
+* Settlement calls are sent directly to the **escrowAddress**; no ID parameter is used on-chain.
 
 
 ### **15.5 End & Settlement **
@@ -1538,7 +1732,7 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 
 1. Check participant count 30 minutes before end
-2. If ≤3 participants: Auto-cancel → Full refunds via `cancel(escrowId)`
+2. If ≤3 participants: Auto-cancel → Full refunds via **cancelIfUnderfilled(participantCount)**
 3. UI notification: "Challenge cancelled - entry fees refunded"
 
 **Normal Settlement (4+ participants):**
@@ -1551,8 +1745,8 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 4. **Apply Payout Logic**:
     * 4-11 participants: Use simplified redistribution (see detailed math below)
     * 12+ participants: Standard Top-12 split
-5. **Contract Settlement**: Call `settle(escrowId, winners[], amounts[], feeRecipients[])`
-6. **Payout Execution**: Tokens sent to users' preferred payout wallets
+5. **Contract Settlement: **Call **settle(winners[], resultsRoot, resultsURI)** on the per-challenge escrow.
+6. **Payout Execution: **Tokens are sent to users’ **Primary** payout wallet for that network.
 7. **UI Updates**: Show "SETTLED" state with transaction links
 
 
@@ -1569,9 +1763,9 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 
 * `createTournament(CreateArgs) -> escrowAddress`
-* `join(challengeId, amount, permitOrPermit2)`
-* `cancelIfUnderfilled(challengeId, participantCount)`
-* `settle(challengeId, winners[], resultsRoot, resultsURI) \
+* `join(amount, permitOrPermit2)                     // called on the per-challenge escrow`
+* `cancelIfUnderfilled(participantCount)             // called on the per-challenge escrow`
+* `settle(winners[], resultsRoot, resultsURI)        // called on the per-challenge escrow \
 `
 * Events: `TournamentCreated, Seeded, Joined, Cancelled, Refunded,ResultsCommitted, FeePaid, WinnerPaid, Settled`
 * Query methods: 
@@ -1701,7 +1895,7 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 * `POST /api/auth/webhook` – Privy auth webhooks (user created/linked/unlinked) \
 
-* `POST /api/mythical/oauth/callback` – link exchange \
+* `POST /api/platforms/mythical/oauth/callback `– link exchange (Mythical provider) \
 
 * `POST /api/challenges` – admin create \
 
@@ -1712,6 +1906,12 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 * `POST /api/challenges/{id}/settle` – admin settle (payouts) \
 
 * `POST /api/pudgy/webhook` – signed game events \
+
+* `GET /v1/profile/username/available?username=` → `{ available: boolean } \
+`
+* `POST /v1/profile/username { username }` → 201 on success; 409 if taken/invalid.
+
+ \
 
 
 
@@ -2187,6 +2387,11 @@ Participants** = wallets that recorded ≥1 match (appear on leaderboard).
 
 ## **WebSockets / Real‑time** — Pub/sub channel for live leaderboard updates and in‑app toasts (e.g., position changes, payout confirmations).
 
+**Game Platform** — An external identity provider for gameplay/telemetry (v0: **Mythical/FusionAuth**). Users link a platform account so Pulse can verify scores and associate gameplay with their profile. \
+
+
+**GamePlatformAccount** — Pulse record mapping `{provider, accountId, displayName, games[]}` to a user; used to gate **Join** and resolve webhook payloads to users. 
+
 
 ## **30) Appendix**
 
@@ -2194,4 +2399,55 @@ Participants** = wallets that recorded ≥1 match (appear on leaderboard).
 
 * **Top‑12 table** and fallback math proofs. \
 
-* **Error code catalog** for wallet and contract failures. \
+* **Error code catalog** for wallet and contract failures.
+
+** \
+30.1 Pulse User Object — Example Payload**
+
+
+```
+{
+  "id": "usr_2e1c...",
+  "createdAt": "2025-09-18T18:12:33Z",
+  "username": "pengu_pro",
+  "usernameNormalized": "pengu_pro",
+  "wallets": {
+    "embeddedEvm": { "address": "0x12ab...cdef" },
+    "embeddedSol": { "address": "6Jsd...PQeX" },
+    "abstract": null,
+    "externals": [
+      { "chain": "evm", "address": "0x9f88...42A1", "label": "MetaMask" }
+    ]
+  },
+  "primaryWallets": {
+    "evmOrAbstract": "0x12ab...cdef",
+    "solana": "6Jsd...PQeX"
+  },
+  "gamePlatforms": [
+    {
+      "provider": "MYTHICAL",
+      "accountId": "myth_abc123",
+      "displayName": "PudgyFan",
+      "games": ["PUDGY_PARTY","NFL_RIVALS"],
+      "linkedAt": "2025-09-18T18:15:04Z"
+    }
+  ],
+  "socialAccounts": {
+    "source": "privy",
+    "linkedAccounts": [
+      { "provider": "google", "linkedAt": "2025-09-18T18:12:30Z" }
+    ],
+    "hasAny": true
+  },
+  "eligibility": {
+    "hasUsername": true,
+    "hasRequiredPlatformForChallenge": false
+  },
+  "preferences": {
+    "notifications": { "challenge_starting": true, "challenge_ending": true }
+  },
+  "walletPref": {
+    "evmPayoutAddr": "0x12ab...cdef",
+    "solPayoutAddr": "6Jsd...PQeX"
+  }
+}

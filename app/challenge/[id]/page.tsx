@@ -2,6 +2,7 @@
 
 // MOCK: Replace mockTournaments with API call to /api/challenges/[id]
 import { mockTournaments } from '@/lib/mockData';
+import { GameType } from '@/lib/types';
 import { useParams, notFound } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -21,6 +22,21 @@ import JoinChallengeModal from '@/components/JoinChallengeModal';
 import WalletConnectionModals from '@/components/WalletConnectionModals';
 import TransactionSigningModals from '@/components/TransactionSigningModals';
 import PrivySignInModal from '@/components/auth/PrivySignInModal';
+
+const GAME_THEMES = {
+  'PUDGY_PARTY': {
+    heroImage: 'https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    gradient: 'from-purple-900/90 via-blue-900/70 to-gray-900/90',
+    gameName: 'Pudgy Party',
+    gameIcon: '🐧'
+  },
+  'NFL_RIVALS': {
+    heroImage: 'https://images.pexels.com/photos/3945313/pexels-photo-3945313.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    gradient: 'from-red-900/90 via-orange-900/70 to-gray-900/90',
+    gameName: 'NFL Rivals',
+    gameIcon: '🏈'
+  }
+};
 
 export default function ChallengePage() {
   const params = useParams();
@@ -78,35 +94,8 @@ export default function ChallengePage() {
     notFound();
   }
 
-  // Game-specific hero images and themes
-  const getGameTheme = (title: string) => {
-    const game = tournament.game;
-    if (game === 'PUDGY_PARTY') {
-      return {
-        heroImage: 'https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg?auto=compress&cs=tinysrgb&w=1600',
-        gradient: 'from-purple-900/90 via-blue-900/70 to-gray-900/90',
-        gameName: 'Pudgy Party',
-        gameIcon: '🐧'
-      };
-    }
-    if (game === 'NFL_RIVALS') {
-      return {
-        heroImage: 'https://images.pexels.com/photos/3945313/pexels-photo-3945313.jpeg?auto=compress&cs=tinysrgb&w=1600',
-        gradient: 'from-red-900/90 via-orange-900/70 to-gray-900/90',
-        gameName: 'NFL Rivals',
-        gameIcon: '🏈'
-      };
-    }
-    // Default gaming theme
-    return {
-      heroImage: 'https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg?auto=compress&cs=tinysrgb&w=1600',
-      gradient: 'from-purple-900/90 via-indigo-900/70 to-gray-900/90',
-      gameName: 'Gaming Tournament',
-      gameIcon: '🎮'
-    };
-  };
 
-  const gameTheme = getGameTheme(tournament.title);
+  const gameTheme = GAME_THEMES[tournament.game] || GAME_THEMES['PUDGY_PARTY'];
 
   // Extract token info from prizePool string
   const extractTokenInfo = (tokenStr: string) => {

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { X, Trophy, Users, Clock, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { mockTournaments } from '@/lib/mockData';
 
 interface NotificationsSidebarProps {
   isOpen: boolean;
@@ -10,14 +11,14 @@ interface NotificationsSidebarProps {
 }
 
 export default function NotificationsSidebar({ isOpen, onClose }: NotificationsSidebarProps) {
-  // Mock notifications data
+  // MOCK: Replace with real notification data from API
   const notifications = [
     {
       id: 1,
       type: 'tournament',
       icon: Trophy,
       title: 'Tournament Starting Soon',
-      message: 'Fortnite Battle Royale Championship starts in 15 minutes',
+      message: `${mockTournaments[0].title} starts in 15 minutes`,
       time: '2 min ago',
       unread: true
     },
