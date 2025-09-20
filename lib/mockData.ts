@@ -3,7 +3,7 @@
 // All components now use this single source of truth
 // Tournament data structure matches PRD specifications exactly
 
-import { Tournament, TournamentCardData, TournamentState } from './types';
+import { Tournament, TournamentCardData, TournamentState, PulseUser, SigninMethod } from './types';
 
 // MOCK: Replace with API call to /api/challenges
 export const mockTournaments: Tournament[] = [
@@ -335,3 +335,123 @@ export function tournamentToCardData(tournament: Tournament): TournamentCardData
 
 // Export converted data for immediate use
 // MOCK: Replace with API call to /api/challenges
+
+// ENGINEER HANDOFF: Mock PulseUser data - replace with real API integration
+// MOCK: Replace with API call to /api/profile
+// MOCK: Replace wallets with Privy user.linkedAccounts
+// MOCK: Replace game platforms with /api/platforms/mythical/linked
+
+// Mock user data that matches PRD Section 3.6 exactly
+export const mockPulseUser: PulseUser = {
+  id: "usr_2e1c7f8a-4b3d-4c6e-8f9a-1b2c3d4e5f6a",
+  createdAt: "2025-01-15T18:12:33Z",
+  
+  // Identity
+  username: "pengu_pro_24", 
+  usernameNormalized: "pengu_pro_24",
+  
+  // Wallets (auto-provisioned embedded + optional external)
+  wallets: {
+    embeddedEvm: { 
+      address: "0x742d35Cc6134C0532925a3b8D4C4405fAE4b38EF" 
+    },
+    embeddedSol: { 
+      address: "6JsdKQP7QsP3YM8BqGH8zNGQGZfGQeXpRqJkLmNpPQeX" 
+    },
+    abstract: undefined, // Optional - created when signing in with Abstract or linked later
+    externals: [
+      {
+        chain: "evm",
+        address: "0x9f88A3B7C41C42A1B8E8D5F2A6B3C4D5E6F7A8B9",
+        label: "MetaMask"
+      }
+    ]
+  },
+  
+  primaryWallets: {
+    evmOrAbstract: "0x742d35Cc6134C0532925a3b8D4C4405fAE4b38EF", // Default to embedded EVM
+    solana: "6JsdKQP7QsP3YM8BqGH8zNGQGZfGQeXpRqJkLmNpPQeX"
+  },
+  
+  // Game Platforms (Mythical v0)
+  gamePlatforms: [
+    {
+      provider: "MYTHICAL",
+      accountId: "myth_pengu_2024_abc123",
+      displayName: "PenguMaster2024",
+      games: ["PUDGY_PARTY", "NFL_RIVALS"],
+      linkedAt: "2025-01-15T18:15:04Z"
+    }
+  ],
+  
+  // Social Accounts (Privy source of truth)
+  socialAccounts: {
+    source: "privy",
+    linkedAccounts: [
+      { 
+        provider: "google", 
+        linkedAt: "2025-01-15T18:12:30Z",
+        email: "pengu.pro@gmail.com"
+      },
+      {
+        provider: "discord",
+        linkedAt: "2025-01-15T18:13:15Z",
+        username: "PenguPro#2024"
+      }
+    ],
+    hasAny: true
+  },
+  
+  // Eligibility helpers (derived flags used by UI flows)
+  eligibility: {
+    hasUsername: true,
+    hasRequiredPlatformForChallenge: true // Has Mythical linked
+  },
+  
+  // Preferences
+  preferences: {
+    notifications: {
+      challenge_starting: true,
+      challenge_ending: true,
+      leaderboard_update: true,
+      new_participant: false,
+      payout_completed: true
+    }
+  },
+  
+  // Contract refs
+  walletPref: {
+    evmPayoutAddr: "0x742d35Cc6134C0532925a3b8D4C4405fAE4b38EF",
+    solPayoutAddr: "6JsdKQP7QsP3YM8BqGH8zNGQGZfGQeXpRqJkLmNpPQeX"
+  }
+};
+
+// Dynamic user creation based on signin method (for testing different auth flows)
+export function createMockUserForSigninMethod(signinMethod: SigninMethod): PulseUser {
+  const baseUser = { ...mockPulseUser };
+  
+  // Modify wallets based on signin method
+  switch (signinMethod) {
+    case 'abstract':
+      baseUser.wallets.abstract = { address: "0xABS7RacT1234567890123456789012345678" };
+      baseUser.primaryWallets.evmOrAbstract = baseUser.wallets.abstract.address;
+      break;
+    case 'metamask':
+      baseUser.wallets.externals = [
+        { chain: "evm", address: "0xMetaMask123456789012345678901234567890", label: "MetaMask" }
+      ];
+      break;
+    case 'phantom':
+      baseUser.wallets.externals = [
+        { chain: "solana", address: "PhantomWallet123456789012345678901234567890", label: "Phantom" }
+      ];
+      break;
+    // email/sms/social: use default embedded wallets only
+  }
+  
+  return baseUser;
+}
+
+// MOCK: Replace mockPulseUser with API call to /api/profile
+// MOCK: Replace createMockUserForSigninMethod with Privy auth state
+// MOCK: Replace gamePlatforms with /api/platforms/mythical/status

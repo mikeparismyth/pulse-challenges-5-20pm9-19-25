@@ -216,3 +216,93 @@ export function isPudgyPartyMode(mode: string): mode is PudgyPartyModeType {
 export function isNFLRivalsMode(mode: string): mode is NFLRivalsModeType {
   return ['SEASON', 'PLAYOFFS', 'TOURNAMENT'].includes(mode);
 }
+
+// Authentication and User Types - PRD Section 3.6 compliant
+export type SigninMethod = 'email' | 'sms' | 'metamask' | 'coinbase' | 'rainbow' | 'walletconnect' | 'phantom' | 'google' | 'discord' | 'abstract';
+
+export interface PulseUserWallet {
+  address: string;
+  label?: string;
+}
+
+export interface PulseUserExternalWallet {
+  chain: "evm" | "solana";
+  address: string;
+  label?: string;
+}
+
+export interface GamePlatformAccount {
+  provider: "MYTHICAL";
+  accountId: string;
+  displayName?: string;
+  games: string[];
+  linkedAt: string;
+}
+
+export interface PulseUserSocialAccounts {
+  source: "privy";
+  linkedAccounts: any[];
+  hasAny: boolean;
+}
+
+export interface PulseUserEligibility {
+  hasUsername: boolean;
+  hasRequiredPlatformForChallenge?: boolean;
+}
+
+export interface PulseUserPreferences {
+  notifications?: Record<string, boolean>;
+}
+
+export interface WalletPref {
+  evmPayoutAddr?: string;
+  solPayoutAddr?: string;
+}
+
+export interface PulseUser {
+  id: string;
+  createdAt: string;
+  
+  // Identity
+  username: string;
+  usernameNormalized: string;
+  
+  // Wallets
+  wallets: {
+    embeddedEvm?: PulseUserWallet;
+    embeddedSol?: PulseUserWallet;
+    abstract?: PulseUserWallet;
+    externals: PulseUserExternalWallet[];
+  };
+  
+  primaryWallets: {
+    evmOrAbstract?: string;
+    solana?: string;
+  };
+  
+  // Game Platforms (Mythical v0)
+  gamePlatforms: GamePlatformAccount[];
+  
+  // Social Accounts (Privy source of truth)
+  socialAccounts: PulseUserSocialAccounts;
+  
+  // Eligibility helpers (derived flags used by UI flows)
+  eligibility: PulseUserEligibility;
+  
+  // Preferences
+  preferences: PulseUserPreferences;
+  
+  // Contract refs (challenge-level mapping lives on challenge rows)
+  walletPref?: WalletPref;
+}
+
+// Backward compatibility interface - DEPRECATED, migrate to PulseUser
+export interface User extends PulseUser {
+  email: string;
+  avatar?: string;
+  connectedWallets: any[]; // Legacy field
+  level: number;
+  xp: number;
+  totalEarnings: string;
+  signinMethod?: SigninMethod;
+}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Smartphone, Wallet, ArrowLeft, Loader2, Check } from 'lucide-react';
+import { X, Mail, Smartphone, Wallet, ArrowLeft, Loader2, Check, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, mockUser } from '@/lib/auth';
 import { toast } from 'sonner';
@@ -30,15 +30,19 @@ interface PrivySignInModalProps {
   onSuccess: () => void;
 }
 
-type SignInStep = 'main' | 'sms' | 'email-otp' | 'sms-otp' | 'wallets' | 'more-wallets' | 'loading' | 'success';
+type SignInStep = 'main' | 'sms' | 'email-otp' | 'sms-otp' | 'wallets' | 'more-wallets' | 'loading' | 'username-setting' | 'success';
 
 export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySignInModalProps) {
   const [step, setStep] = useState<SignInStep>('main');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
+  const [username, setUsername] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentOTPMethod, setCurrentOTPMethod] = useState<'email' | 'sms'>('email');
+  const [isReturningUser, setIsReturningUser] = useState(false);
   const { login } = useAuth();
 
   // Reset state when modal opens
@@ -48,8 +52,12 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
       setEmail('');
       setPhone('');
       setOtpCode('');
+      setUsername('');
+      setUsernameError('');
+      setIsUsernameAvailable(null);
       setIsLoading(false);
       setCurrentOTPMethod('email');
+      setIsReturningUser(false);
     }
   }, [isOpen]);
 
@@ -87,6 +95,78 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
     }, 1500);
   };
 
+  const validateUsername = (value: string): string => {
+    // PRD Section 3.5a validation rules
+    const pattern = /^[a-z][a-z0-9_]{2,19}$/;
+    const reserved = ['admin', 'mod', 'pulse', 'support', 'team', 'owner', 'abstract', 'eth', 'sol', 'null', 'undefined'];
+    
+    if (!pattern.test(value)) {
+      return 'Username must be 3-20 characters, start with a letter, and contain only lowercase letters, numbers, and underscores';
+    }
+    
+    if (reserved.includes(value.toLowerCase())) {
+      return 'This username is reserved and cannot be used';
+    }
+    
+    return '';
+  };
+
+  const checkUsernameAvailability = async (value: string) => {
+    if (!value || validateUsername(value)) {
+      setIsUsernameAvailable(null);
+      return;
+    }
+    
+    // MOCK: Replace with API call to /api/profile/username/available
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const available = !['admin', 'pulse', 'test', 'pengu_pro_24'].includes(value.toLowerCase());
+    setIsUsernameAvailable(available);
+    
+    if (!available) {
+      setUsernameError('Username is already taken');
+    }
+  };
+
+  const handleUsernameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const error = validateUsername(username);
+    if (error) {
+      setUsernameError(error);
+      return;
+    }
+    
+    if (isUsernameAvailable === false) {
+      setUsernameError('Username is already taken');
+      return;
+    }
+    
+    setIsLoading(true);
+    setStep('loading');
+    
+    // MOCK: Replace with API call to save username
+    setTimeout(() => {
+      // Add user to localStorage cache for session-based detection
+      // MOCK: Replace with API call to create user account
+      const createdUsers = JSON.parse(localStorage.getItem('pulse_created_users') || '[]');
+      const usernames = JSON.parse(localStorage.getItem('pulse_user_usernames') || '{}');
+      const userKey = `${email}_${currentOTPMethod}`;
+
+      if (!createdUsers.includes(userKey)) {
+        createdUsers.push(userKey);
+        usernames[userKey] = username;
+        localStorage.setItem('pulse_created_users', JSON.stringify(createdUsers));
+        localStorage.setItem('pulse_user_usernames', JSON.stringify(usernames));
+      }
+      
+      setStep('success');
+      setTimeout(() => {
+        login(currentOTPMethod, username);
+        onSuccess();
+        toast.success('Account created successfully!');
+      }, 1500);
+    }, 2000);
+  };
+
   const handleOTPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otpCode.length !== 6) return;
@@ -96,12 +176,31 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
     
     // Simulate OTP verification
     setTimeout(() => {
-      setStep('success');
-      setTimeout(() => {
-        login(mockUser, currentOTPMethod);
-        onSuccess();
-        toast.success('Successfully signed in!');
-      }, 1500);
+      // MOCK: Replace with API call to check if user exists
+      // Check if this email/method combo has been used before in this session
+      const createdUsers = JSON.parse(localStorage.getItem('pulse_created_users') || '[]');
+      const userKey = `${email}_${currentOTPMethod}`;
+      const isExistingUser = createdUsers.includes(userKey);
+      
+      if (isExistingUser) {
+        setIsReturningUser(true);
+        // Existing user - skip username setting, go directly to success
+        // MOCK: Replace with API call to get user profile
+        const usernames = JSON.parse(localStorage.getItem('pulse_user_usernames') || '{}');
+        const storedUsername = usernames[userKey];
+        
+        setStep('success');
+        setTimeout(() => {
+          login(currentOTPMethod, storedUsername);
+          onSuccess();
+          toast.success('Welcome back!');
+        }, 1500);
+      } else {
+        setIsReturningUser(false);
+        // New user - go to username setting
+        setStep('username-setting');
+        setIsLoading(false);
+      }
     }, 2000);
   };
 
@@ -113,7 +212,7 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
     setTimeout(() => {
       setStep('success');
       setTimeout(() => {
-        login(mockUser, mapToSigninMethod(provider));
+        login(mapToSigninMethod(provider));
         onSuccess();
         toast.success(`Successfully signed in with ${provider}!`);
       }, 1500);
@@ -128,7 +227,7 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
     setTimeout(() => {
       setStep('success');
       setTimeout(() => {
-        login(mockUser, mapToSigninMethod(wallet));
+        login(mapToSigninMethod(wallet));
         onSuccess();
         toast.success(`Successfully connected ${wallet}!`);
       }, 1500);
@@ -358,6 +457,98 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
     </motion.div>
   );
 
+  const renderUsernameStep = () => (
+    <motion.div
+      key="username-setting"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="p-6"
+    >
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 bg-gradient-to-br from-[#8E1EFE] to-[#30FFE6] rounded-full flex items-center justify-center mx-auto mb-4">
+          <User className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-xl font-medium text-white mb-2">Choose your username</h2>
+        <p className="text-sm text-gray-400">
+          This will be your unique handle in tournaments and leaderboards
+        </p>
+      </div>
+
+      {/* Username Form */}
+      <form onSubmit={handleUsernameSubmit} className="mb-6">
+        <div className="relative mb-4">
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => {
+              const value = e.target.value.toLowerCase();
+              setUsername(value);
+              setUsernameError('');
+              setIsUsernameAvailable(null);
+              if (value.length >= 3) {
+                checkUsernameAvailability(value);
+              }
+            }}
+            placeholder="your_username"
+            className={`w-full px-4 py-4 bg-gray-800/30 border rounded-xl text-white placeholder-gray-400 focus:outline-none transition-colors ${
+              usernameError 
+                ? 'border-red-500 focus:border-red-500' 
+                : isUsernameAvailable === true 
+                  ? 'border-green-500 focus:border-green-500'
+                  : isUsernameAvailable === false
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-gray-600 focus:border-blue-500'
+            }`}
+            required
+            maxLength={20}
+          />
+          {isUsernameAvailable === true && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+              <Check className="w-5 h-5" />
+            </div>
+          )}
+          {isUsernameAvailable === false && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
+              <X className="w-5 h-5" />
+            </div>
+          )}
+        </div>
+        
+        {usernameError && (
+          <p className="text-red-400 text-sm mb-4">{usernameError}</p>
+        )}
+        
+        <button
+          type="submit"
+          disabled={!username || !!usernameError || isUsernameAvailable === false || isLoading}
+          className="w-full py-4 bg-gradient-to-r from-[#8E1EFE] to-[#30FFE6] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-opacity"
+        >
+          Continue
+        </button>
+      </form>
+
+      {/* Rules */}
+      <div className="text-xs text-gray-500 space-y-1">
+        <p>• 3-20 characters</p>
+        <p>• Must start with a letter</p>
+        <p>• Only lowercase letters, numbers, and underscores</p>
+      </div>
+
+      {/* Footer */}
+      <div className="text-center mt-8">
+        <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+          <span>Protected by</span>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-gradient-to-br from-[#8E1EFE] to-[#30FFE6] rounded-sm"></div>
+            <span className="font-semibold text-white">pulse</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+
   const renderWalletsStep = () => (
     <motion.div
       key="wallets"
@@ -536,7 +727,9 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
         <Check className="w-8 h-8 text-white" />
       </div>
       <h2 className="text-xl font-semibold text-white mb-2">Success!</h2>
-      <p className="text-gray-400 mb-4">You've successfully created an account.</p>
+      <p className="text-gray-400 mb-4">
+        {isReturningUser ? 'Welcome back to Pulse!' : "You've successfully created an account."}
+      </p>
       <div className="text-sm text-gray-500">Redirecting...</div>
     </motion.div>
   );
@@ -554,6 +747,8 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
         return renderWalletsStep();
       case 'more-wallets':
         return renderMoreWalletsStep();
+      case 'username-setting':
+        return renderUsernameStep();
       case 'loading':
         return renderLoadingStep();
       case 'success':
