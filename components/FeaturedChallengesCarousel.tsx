@@ -5,27 +5,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Play, Users, Trophy, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { mockTournaments } from '@/lib/mockData';
+import { mockChallenges } from '@/lib/mockData';
 
 export default function FeaturedChallengesCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   // MOCK: Replace with API call to /api/challenges/featured
-  const featuredChallenges = mockTournaments
+  const featuredChallenges = mockChallenges
     .filter(t => t.state === 'LIVE' || t.state === 'UPCOMING')
     .slice(0, 4)
-    .map(tournament => ({
-      id: tournament.id,
-      title: tournament.title,
-      game: tournament.game === 'PUDGY_PARTY' ? 'Pudgy Party' : 'NFL Rivals',
-      status: tournament.state as 'LIVE' | 'UPCOMING',
-      participants: tournament.participants,
-      maxParticipants: tournament.entry_and_prizes.max_participants || 999,
-      prizePool: `${Math.floor(tournament.participants * parseFloat(tournament.entry_and_prizes.entry_fee) / Math.pow(10, tournament.entry_and_prizes.entry_token.decimals))} ${tournament.entry_and_prizes.prize_token.symbol}`,
-      timeRemaining: tournament.state === 'LIVE' ? 'In Progress' : 'Starts Soon',
+    .map(challenge => ({
+      id: challenge.id,
+      title: challenge.title,
+      game: challenge.game === 'PUDGY_PARTY' ? 'Pudgy Party' : 'NFL Rivals',
+      status: challenge.state as 'LIVE' | 'UPCOMING',
+      participants: challenge.participants,
+      maxParticipants: challenge.entry_and_prizes.max_participants || 999,
+      prizePool: `${Math.floor(challenge.participants * parseFloat(challenge.entry_and_prizes.entry_fee) / Math.pow(10, challenge.entry_and_prizes.entry_token.decimals))} ${challenge.entry_and_prizes.prize_token.symbol}`,
+      timeRemaining: challenge.state === 'LIVE' ? 'In Progress' : 'Starts Soon',
       heroImage: 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=1200',
-      gradient: tournament.game === 'PUDGY_PARTY' ? 'from-blue-900/80 via-cyan-900/60 to-transparent' : 'from-green-900/80 via-emerald-900/60 to-transparent'
+      gradient: challenge.game === 'PUDGY_PARTY' ? 'from-blue-900/80 via-cyan-900/60 to-transparent' : 'from-green-900/80 via-emerald-900/60 to-transparent'
     }));
 
   // Auto-advance carousel

@@ -244,7 +244,7 @@ export default function RequiredPlatformModal({
                       You can now join {gameInfo.gameName} challenges
                     </p>
                     <div className="text-sm text-gray-500">
-                      Proceeding to tournament entry...
+                      Proceeding to challenge entry...
                     </div>
                   </motion.div>
                 )}

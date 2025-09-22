@@ -472,7 +472,7 @@ export default function PrivySignInModal({ isOpen, onClose, onSuccess }: PrivySi
         </div>
         <h2 className="text-xl font-medium text-white mb-2">Choose your username</h2>
         <p className="text-sm text-gray-400">
-          This will be your unique handle in tournaments and leaderboards
+          This will be your unique handle in challenges and leaderboards
         </p>
       </div>
 

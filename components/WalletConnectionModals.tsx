@@ -194,7 +194,7 @@ export default function WalletConnectionModals({
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">Connected to Abstract</h2>
           <p className="text-gray-400 mb-4">Wallet address: 0x1234...5678</p>
-          <div className="text-sm text-gray-500">Redirecting to tournament...</div>
+          <div className="text-sm text-gray-500">Redirecting to challenge...</div>
         </motion.div>
       )}
     </AnimatePresence>

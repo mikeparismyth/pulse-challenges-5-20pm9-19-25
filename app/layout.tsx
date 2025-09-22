@@ -8,8 +8,8 @@ import { Toaster } from 'sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Pulse Challenges - Gaming Tournament Platform',
-  description: 'Compete in gaming tournaments and win amazing prizes',
+  title: 'Pulse Challenges - Gaming Challenge Platform',
+  description: 'Compete in gaming challenges and win amazing prizes',
 };
 
 export default function RootLayout({

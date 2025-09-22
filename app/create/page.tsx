@@ -31,9 +31,9 @@ export default function CreatePage() {
                 <Zap className="w-5 h-5 text-[#30FFE6]" />
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-2">Tournament Setup</h3>
+                <h3 className="text-white font-semibold mb-2">Challenge Setup</h3>
                 <p className="text-gray-300 text-sm">
-                  Configure game type, scoring rules, and tournament format with intuitive controls.
+                  Configure game type, scoring rules, and challenge format with intuitive controls.
                 </p>
               </div>
             </div>
@@ -69,7 +69,7 @@ export default function CreatePage() {
               <div>
                 <h3 className="text-white font-semibold mb-2">Scheduling System</h3>
                 <p className="text-gray-300 text-sm">
-                  Plan tournament dates, set registration deadlines, and manage time zones automatically.
+                  Plan challenge dates, set registration deadlines, and manage time zones automatically.
                 </p>
               </div>
             </div>
@@ -81,7 +81,7 @@ export default function CreatePage() {
               <div>
                 <h3 className="text-white font-semibold mb-2">Advanced Settings</h3>
                 <p className="text-gray-300 text-sm">
-                  Configure dispute resolution, fee structures, and custom tournament rules.
+                  Configure dispute resolution, fee structures, and custom challenge rules.
                 </p>
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function CreatePage() {
               <div>
                 <h3 className="text-white font-semibold mb-2">Template Library</h3>
                 <p className="text-gray-300 text-sm">
-                  Choose from pre-built tournament templates or create custom configurations.
+                  Choose from pre-built challenge templates or create custom configurations.
                 </p>
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function CreatePage() {
             <span className="font-semibold">Admin Access Required</span>
           </div>
           <p className="text-gray-300">
-            Tournament creation will be available to verified organizers and platform administrators.
+            Challenge creation will be available to verified organizers and platform administrators.
             Contact support for early access to creation tools.
           </p>
         </div>

@@ -3,18 +3,18 @@
 // GAME_MODE_CONFIGS provides game-specific configuration for UI components
 // All TypeScript interfaces match backend webhook schemas exactly
 
-// Tournament Data Types - Based on PRD Specifications
+// Challenge Data Types - Based on PRD Specifications
 
 export type ChainType = 'ABSTRACT' | 'SOLANA' | 'ETHEREUM';
 export type GameType = 'PUDGY_PARTY' | 'NFL_RIVALS'; // v1; expanded game support
 export type ModeType = 'LEADERBOARD';
 export type VisibilityType = 'public' | 'private' | 'unlisted';
 export type ScoreByType = 'TOP1_COUNT' | 'TOP3_COUNT' | 'TOP10_COUNT' | 'COINS_EARNED' | 'CUSTOM_METRIC' | 'POINTS_SCORED' | 'WINS' | 'TOUCHDOWNS';
-export type TournamentState = 'DRAFT' | 'UPCOMING' | 'LIVE' | 'ENDED' | 'SETTLED' | 'CANCELLED' | 'DISPUTE';
+export type ChallengeState = 'DRAFT' | 'UPCOMING' | 'LIVE' | 'ENDED' | 'SETTLED' | 'CANCELLED' | 'DISPUTE';
 
 // Game-specific mode configurations
 export type PudgyPartyModeType = 'ALL_MODES' | 'BATTLE_ROYALE' | 'EVENT';
-export type NFLRivalsModeType = 'SEASON' | 'PLAYOFFS' | 'TOURNAMENT';
+export type NFLRivalsModeType = 'ALL_MODES' | 'STADIUMS' | 'EVENT' | 'LEAGUE';
 
 // Game mode configuration interface
 export interface GameModeConfig {
@@ -36,9 +36,9 @@ export const GAME_MODE_CONFIGS: Record<GameType, GameModeConfig> = {
   },
   NFL_RIVALS: {
     game: 'NFL_RIVALS',
-    availableModes: ['SEASON', 'PLAYOFFS', 'TOURNAMENT'] as NFLRivalsModeType[],
+    availableModes: ['ALL_MODES', 'STADIUMS', 'EVENT', 'LEAGUE'] as NFLRivalsModeType[],
     availableScoring: ['POINTS_SCORED', 'WINS', 'TOUCHDOWNS', 'CUSTOM_METRIC'],
-    defaultMode: 'SEASON',
+    defaultMode: 'ALL_MODES',
     defaultScoring: 'POINTS_SCORED'
   }
 };
@@ -73,7 +73,7 @@ export interface Fees {
   organizer_fee_wallet: string;
 }
 
-export interface Tournament {
+export interface Challenge {
   id: string; // UUID
   title: string;
   slug: string; // Derived from title
@@ -92,7 +92,7 @@ export interface Tournament {
   fees: Fees;
   
   // State Management
-  state: TournamentState;
+  state: ChallengeState;
   created_by: string; // userId
   allow_user_generated: boolean; // Feature flag
   dispute_window_hours: number; // Default 24
@@ -102,19 +102,16 @@ export interface Tournament {
   participants: number; // Current participant count
   created_at: string; // ISO 8601 timestamp
   updated_at: string; // ISO 8601 timestamp
-}
-
-// PRD-compliant Challenge model (extends Tournament with additional features)
-export interface Challenge extends Tournament {
+  
   // Challenge-specific fields
-  challenge_type: 'TOURNAMENT' | 'LEADERBOARD' | 'BRACKET';
+  challenge_type: 'CHALLENGE' | 'LEADERBOARD' | 'BRACKET';
   registration_deadline?: string; // ISO 8601 timestamp
   start_date: string; // ISO 8601 timestamp  
   end_date: string; // ISO 8601 timestamp
   
   // Game-specific configuration
   game_config: {
-    mode: string; // Game-specific mode (BATTLE_ROYALE, SEASON, etc.)
+    mode: string; // Game-specific mode (BATTLE_ROYALE, ALL_MODES, etc.)
     scoring_type: ScoreByType;
     custom_rules?: Record<string, any>; // Flexible game-specific rules
   };
@@ -126,17 +123,17 @@ export interface Challenge extends Tournament {
   region?: string; // Geographic restriction if any
   
   // Social features
-  team_size?: number; // 1 for solo, >1 for team tournaments
+  team_size?: number; // 1 for solo, >1 for team challenges
   allow_spectators?: boolean;
   stream_url?: string; // Official stream link
   
   // MOCK: Replace with API call to /api/challenges/[id]
   // MOCK: Replace with API call to /api/challenges (for list)
   // MOCK: Replace with API call to /api/challenges (POST for creation)
-}
+};
 
-// UI Display Types (derived from Tournament data)
-export interface TournamentCardData {
+// UI Display Types (derived from Challenge data)
+export interface ChallengeCardData {
   id: string;
   title: string;
   status: 'LIVE' | 'UPCOMING' | 'ENDED'; // Simplified for UI
@@ -148,17 +145,8 @@ export interface TournamentCardData {
   timeRemaining?: string; // Human readable time
 }
 
-// Challenge display data (extends TournamentCardData)
-export interface ChallengeCardData extends TournamentCardData {
-  gameMode: string;
-  skillLevel?: string;
-  teamSize?: number;
-  featured?: boolean;
-  tags?: string[];
-}
-
-// Utility type for tournament creation
-export interface CreateTournamentRequest {
+// Utility type for challenge creation
+export interface CreateChallengeRequest {
   title: string;
   visibility: VisibilityType;
   game: GameType;
@@ -169,10 +157,7 @@ export interface CreateTournamentRequest {
   organizer_fee_wallet?: string;
   max_participants?: number;
   description?: string;
-}
-// Challenge creation request (extends tournament creation)
-export interface CreateChallengeRequest extends CreateTournamentRequest {
-  challenge_type: 'TOURNAMENT' | 'LEADERBOARD' | 'BRACKET';
+  challenge_type: 'CHALLENGE' | 'LEADERBOARD' | 'BRACKET';
   registration_deadline?: string;
   start_date: string;
   end_date: string;
@@ -185,7 +170,7 @@ export interface CreateChallengeRequest extends CreateTournamentRequest {
   featured?: boolean;
   skill_level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'PROFESSIONAL';
   region?: string;
-  team_size?: number;
+  team_size?: number; 
   allow_spectators?: boolean;
   stream_url?: string;
   // MOCK: Replace with API call to /api/challenges (POST)
@@ -214,7 +199,7 @@ export function isPudgyPartyMode(mode: string): mode is PudgyPartyModeType {
 }
 
 export function isNFLRivalsMode(mode: string): mode is NFLRivalsModeType {
-  return ['SEASON', 'PLAYOFFS', 'TOURNAMENT'].includes(mode);
+  return ['ALL_MODES', 'STADIUMS', 'EVENT', 'LEAGUE'].includes(mode);
 }
 
 // Game Platform Requirements System

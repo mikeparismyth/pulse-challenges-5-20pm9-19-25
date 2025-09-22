@@ -1,11 +1,11 @@
 import React from 'react';
-import { mockTournaments } from '@/lib/mockData';
+import { mockChallenges } from '@/lib/mockData';
 
 // MOCK: Replace with API call to /api/challenges for static generation
 // Server component for static generation
 export async function generateStaticParams() {
-  return mockTournaments.map((tournament) => ({
-    id: tournament.id,
+  return mockChallenges.map((challenge) => ({
+    id: challenge.id,
   }));
 }
 

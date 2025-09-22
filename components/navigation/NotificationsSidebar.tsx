@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { X, Trophy, Users, Clock, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { mockTournaments } from '@/lib/mockData';
+import { mockChallenges } from '@/lib/mockData';
 
 interface NotificationsSidebarProps {
   isOpen: boolean;
@@ -15,10 +15,10 @@ export default function NotificationsSidebar({ isOpen, onClose }: NotificationsS
   const notifications = [
     {
       id: 1,
-      type: 'tournament',
+      type: 'challenge',
       icon: Trophy,
-      title: 'Tournament Starting Soon',
-      message: `${mockTournaments[0].title} starts in 15 minutes`,
+      title: 'Challenge Starting Soon',
+      message: `${mockChallenges[0].title} starts in 15 minutes`,
       time: '2 min ago',
       unread: true
     },
@@ -92,7 +92,7 @@ export default function NotificationsSidebar({ isOpen, onClose }: NotificationsS
               >
                 <div className="flex items-start space-x-3">
                   <div className={`p-2 rounded-lg ${
-                    notification.type === 'tournament' ? 'bg-yellow-500/20 text-yellow-400' :
+                    notification.type === 'challenge' ? 'bg-yellow-500/20 text-yellow-400' :
                     notification.type === 'achievement' ? 'bg-[#8E1EFE]/20 text-[#8E1EFE]' :
                     'bg-[#30FFE6]/20 text-[#30FFE6]'
                   }`}>

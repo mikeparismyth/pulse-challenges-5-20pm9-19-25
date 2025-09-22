@@ -75,7 +75,7 @@ export default function TransactionSigningModals({
       // Auto close and show success after 2 seconds
       setTimeout(() => {
         onSuccess();
-        toast.success('Tournament joined successfully!');
+        toast.success('Challenge joined successfully!');
       }, 2000);
     } catch (error) {
       setIsLoading(false);
@@ -300,7 +300,7 @@ export default function TransactionSigningModals({
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">Transaction Complete!</h2>
           <p className="text-gray-400 mb-4">Successfully joined {challenge.title}</p>
-          <div className="text-sm text-gray-500">Redirecting to tournament...</div>
+          <div className="text-sm text-gray-500">Redirecting to challenge...</div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -506,7 +506,7 @@ export default function TransactionSigningModals({
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Confirm Transaction</h2>
             <p className="text-gray-400">
-              Review and confirm your tournament entry
+              Review and confirm your challenge entry
             </p>
           </div>
 
@@ -537,7 +537,7 @@ export default function TransactionSigningModals({
             <h3 className="text-white font-medium mb-3">Transaction Details</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-gray-400 text-sm">Tournament Entry</span>
+                <span className="text-gray-400 text-sm">Challenge Entry</span>
                 <span className="text-white text-sm font-medium">
                   {entryInfo.amount} {entryInfo.symbol}
                 </span>
@@ -563,7 +563,7 @@ export default function TransactionSigningModals({
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-[#8E1EFE] to-[#30FFE6] hover:opacity-90 text-white py-3 rounded-lg font-medium transition-opacity disabled:opacity-50"
             >
-              Confirm & Join Tournament
+              Confirm & Join Challenge
             </Button>
             <button
               onClick={handleNotNow}
@@ -598,7 +598,7 @@ export default function TransactionSigningModals({
             <Loader2 className="w-8 h-8 text-white animate-spin" />
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">Processing Transaction...</h2>
-          <p className="text-gray-400">Joining tournament and processing entry fee</p>
+          <p className="text-gray-400">Joining challenge and processing entry fee</p>
         </motion.div>
       )}
 
@@ -613,13 +613,13 @@ export default function TransactionSigningModals({
           <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">Welcome to the Tournament!</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">Welcome to the Challenge!</h2>
           <p className="text-gray-400 mb-4">
             You've successfully joined {challenge.title}
           </p>
           <Button className="w-full bg-gradient-to-r from-[#8E1EFE] to-[#30FFE6] hover:opacity-90 text-white py-3 rounded-lg font-medium transition-opacity mb-4">
             <ExternalLink className="w-4 h-4 mr-2" />
-            View Tournament
+            View Challenge
           </Button>
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
@@ -657,7 +657,7 @@ export default function TransactionSigningModals({
               </div>
               <h2 className="text-2xl font-semibold text-white mb-2">Pay with Card</h2>
               <p className="text-gray-400">
-                Purchase {amount} {symbol} (~${entryInfo.usdValue.toFixed(2)}) to join the tournament
+                Purchase {amount} {symbol} (~${entryInfo.usdValue.toFixed(2)}) to join the challenge
               </p>
             </div>
 
@@ -710,7 +710,7 @@ export default function TransactionSigningModals({
               disabled={isLoading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
             >
-              Pay ${entryInfo.usdValue.toFixed(2)} & Join Tournament
+              Pay ${entryInfo.usdValue.toFixed(2)} & Join Challenge
             </Button>
 
             {/* Footer */}
@@ -751,9 +751,9 @@ export default function TransactionSigningModals({
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Payment Complete!</h2>
             <p className="text-gray-400 mb-4">
-              Successfully purchased {amount} {symbol} and joined the tournament!
+              Successfully purchased {amount} {symbol} and joined the challenge!
             </p>
-            <div className="text-sm text-gray-500">Redirecting to tournament...</div>
+            <div className="text-sm text-gray-500">Redirecting to challenge...</div>
           </motion.div>
         )}
       </AnimatePresence>
