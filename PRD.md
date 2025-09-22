@@ -297,7 +297,7 @@ This is the canonical shape the app exposes internally (TypeScript/DB) and retur
 
 
 ```
-type PulseUser = {
+type user = {
   id: string
   createdAt: string
   // Identity
