@@ -195,7 +195,7 @@ export default function JoinChallengeModal({
                   {/* Fee Disclosure */}
                   <div className="mt-4 p-3 bg-gray-800/30 rounded-lg border border-gray-700/30">
                     <p className="text-xs text-gray-400 leading-relaxed">
-                      Tournament fees (Developer: {developerFeePercent}%, Organizer: {organizerFeePercent}%) will be deducted from the total prize pool at tournament completion.
+                      Challenge fees (Developer: {developerFeePercent}%, Organizer: {organizerFeePercent}%) will be deducted from the total prize pool at challenge completion.
                     </p>
                   </div>
                 </div>

@@ -2,7 +2,7 @@
 
 // ENGINEER HANDOFF: Component now uses centralized game themes
 // gameType prop eliminates hardcoded game detection issues
-// Ready for real tournament data via props - no component changes needed
+// Ready for real challenge data via props - no component changes needed
 
 import { motion } from 'framer-motion';
 import { Clock, Trophy, Users, Gamepad2 } from 'lucide-react';
@@ -26,7 +26,7 @@ const GAME_THEMES = {
   }
 };
 
-interface TournamentCardProps {
+interface ChallengeCardProps {
   id?: string;
   title: string;
   status: 'LIVE' | 'UPCOMING' | 'ENDED';
@@ -39,7 +39,7 @@ interface TournamentCardProps {
   gameType?: GameType; // TODO: Pass gameType prop from parent components
 }
 
-export default function TournamentCard({
+export default function ChallengeCard({
   id,
   title,
   status,
@@ -50,7 +50,7 @@ export default function TournamentCard({
   timeRemaining,
   startTime,
   gameType,
-}: TournamentCardProps) {
+}: ChallengeCardProps) {
   const statusStyles = {
     LIVE: 'bg-red-500/90 text-white border-red-500/50 shadow-glow-red backdrop-blur-sm',
     UPCOMING: 'bg-yellow-500/90 text-white border-yellow-500/50 shadow-glow-yellow backdrop-blur-sm',

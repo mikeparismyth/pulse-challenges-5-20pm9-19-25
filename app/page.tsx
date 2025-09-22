@@ -1,9 +1,9 @@
 'use client';
 
-// MOCK: Replace mockTournaments with API call to /api/challenges
-import { mockTournaments, tournamentToCardData } from '@/lib/mockData';
+// MOCK: Replace mockChallenges with API call to /api/challenges
+import { mockChallenges, challengeToCardData } from '@/lib/mockData';
 import { GameType } from '@/lib/types';
-import TournamentCard from '@/components/TournamentCard';
+import ChallengeCard from '@/components/ChallengeCard';
 import FeaturedChallengesCarousel from '@/components/FeaturedChallengesCarousel';
 import ChallengeFilters, { FilterState } from '@/components/ChallengeFilters';
 import Link from 'next/link';
@@ -21,16 +21,16 @@ export default function Home() {
     sortBy: 'latest',
   });
 
-  // Convert mock tournament data to display format
-  const tournaments = mockTournaments.map(tournamentToCardData);
+  // Convert mock challenge data to display format
+  const challenges = mockChallenges.map(challengeToCardData);
 
-  // Filter and organize tournaments
-  const { liveTournaments, upcomingTournaments, completedTournaments } = useMemo(() => {
-    let filtered = tournaments.filter(tournament => {
+  // Filter and organize challenges
+  const { liveChallenges, upcomingChallenges, completedChallenges } = useMemo(() => {
+    let filtered = challenges.filter(challengeItem => {
       // Status filter
       if (filters.status !== 'all') {
         const statusMap = { live: 'LIVE', upcoming: 'UPCOMING', ended: 'ENDED' };
-        if (tournament.status !== statusMap[filters.status as keyof typeof statusMap]) {
+        if (challengeItem.status !== statusMap[filters.status as keyof typeof statusMap]) {
           return false;
         }
       }
@@ -43,15 +43,15 @@ export default function Home() {
           'nfl-rivals': 'NFL_RIVALS'
         };
         const expectedGameType = gameMap[filters.game];
-        const tournamentData = mockTournaments.find(t => tournamentToCardData(t).id === tournament.id);
-        if (!tournamentData || tournamentData.game !== expectedGameType) {
+        const challengeData = mockChallenges.find(t => challengeToCardData(t).id === challengeItem.id);
+        if (!challengeData || challengeData.game !== expectedGameType) {
           return false;
         }
       }
 
       // Token filter
       if (filters.token !== 'all') {
-        const tokenSymbol = tournament.prizePool.split(' ')[1];
+        const tokenSymbol = challengeItem.prizePool.split(' ')[1];
         if (tokenSymbol.toLowerCase() !== filters.token.toLowerCase()) {
           return false;
         }
@@ -59,7 +59,7 @@ export default function Home() {
 
       // Entry fee range filter
       if (filters.entryFee !== 'all') {
-        const entryFeeAmount = parseFloat(tournament.entryFee?.split(' ')[0] || '0');
+        const entryFeeAmount = parseFloat(challengeItem.entryFee?.split(' ')[0] || '0');
         switch (filters.entryFee) {
           case 'free':
             if (entryFeeAmount > 0) return false;
@@ -82,7 +82,7 @@ export default function Home() {
       return true;
     });
 
-    // Sort tournaments
+    // Sort challenges
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
         case 'prize-pool':
@@ -105,15 +105,15 @@ export default function Home() {
     const completed = filtered.filter(t => t.status === 'ENDED');
 
     return {
-      liveTournaments: live,
-      upcomingTournaments: upcoming,
-      completedTournaments: completed,
+      liveChallenges: live,
+      upcomingChallenges: upcoming,
+      completedChallenges: completed,
     };
-  }, [tournaments, filters]);
+  }, [challenges, filters]);
 
-  const renderTournamentSection = (
+  const renderChallengeSection = (
     title: string,
-    tournaments: Array<{
+    challengeItems: Array<{
       id: string;
       title: string;
       status: 'LIVE' | 'UPCOMING' | 'ENDED';
@@ -127,7 +127,7 @@ export default function Home() {
     icon: React.ReactNode,
     statusColor: string
   ) => {
-    if (tournaments.length === 0) return null;
+    if (challengeItems.length === 0) return null;
 
     return (
       <motion.section
@@ -140,21 +140,21 @@ export default function Home() {
           {icon}
           <span className="ml-2">{title}</span>
           <span className="ml-3 text-sm text-gray-400 font-normal">
-            ({tournaments.length})
+            ({challengeItems.length})
           </span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tournaments.map((tournament, index) => (
+          {challengeItems.map((challengeItem, index) => (
             <motion.div
-              key={tournament.id}
+              key={challengeItem.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Link href={`/challenge/${tournament.id}`}>
-                <TournamentCard 
-                  {...tournament} 
-                  gameType={mockTournaments.find(t => tournamentToCardData(t).id === tournament.id)?.game}
+              <Link href={`/challenge/${challengeItem.id}`}>
+                <ChallengeCard 
+                  {...challengeItem} 
+                  gameType={mockChallenges.find(t => challengeToCardData(t).id === challengeItem.id)?.game}
                 />
               </Link>
             </motion.div>
@@ -177,37 +177,37 @@ export default function Home() {
             Browse Challenges
           </h1>
           <p className="text-lg text-gray-300">
-            Discover and join gaming tournaments across multiple platforms
+            Discover and join gaming challenges across multiple platforms
           </p>
         </div>
 
         {/* Challenge Filters */}
         <ChallengeFilters filters={filters} onFiltersChange={setFilters} />
 
-        {/* Tournament Sections */}
-        {renderTournamentSection(
+        {/* Challenge Sections */}
+        {renderChallengeSection(
           'Live Now',
-          liveTournaments,
+          liveChallenges,
           <Trophy className="w-6 h-6" />,
           'bg-red-500'
         )}
 
-        {renderTournamentSection(
+        {renderChallengeSection(
           'Upcoming',
-          upcomingTournaments,
+          upcomingChallenges,
           <Clock className="w-6 h-6" />,
           'bg-yellow-500'
         )}
 
-        {renderTournamentSection(
+        {renderChallengeSection(
           'Completed',
-          completedTournaments,
+          completedChallenges,
           <CheckCircle className="w-6 h-6" />,
           'bg-gray-500'
         )}
 
         {/* No Results State */}
-        {liveTournaments.length === 0 && upcomingTournaments.length === 0 && completedTournaments.length === 0 && (
+        {liveChallenges.length === 0 && upcomingChallenges.length === 0 && completedChallenges.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

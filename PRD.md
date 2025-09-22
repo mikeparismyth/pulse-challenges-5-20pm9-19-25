@@ -11,7 +11,7 @@
 
 ## **0) Executive Summary**
 
-We will build **Pulse Challenges** as a responsive **web app** (mobile-first, desktop-ready) that we can ship rapidly, demo cleanly, and hand off to engineers for production hardening. It will use **Next.js** + **Vercel** for velocity, **Privy** for progressive auth + embedded/external wallets (EVM & Solana), and target **Abstract L2 (EVM)** first for on-chain escrow + payouts, with **Pudgy Party** as the flagship game. The app must preserve the Pulse tournament business logic (Top‑12 leaderboard, fees, low‑participation rules) and add multi‑token/multi‑network selection for entry/payouts (MYTH on Abstract; PENGU on Abstract and/or Solana; admin‑addable tokens).
+We will build **Pulse Challenges** as a responsive **web app** (mobile-first, desktop-ready) that we can ship rapidly, demo cleanly, and hand off to engineers for production hardening. It will use **Next.js** + **Vercel** for velocity, **Privy** for progressive auth + embedded/external wallets (EVM & Solana), and target **Abstract L2 (EVM)** first for on-chain escrow + payouts, with **Pudgy Party** as the flagship game. The app must preserve the Pulse challengebusiness logic (Top‑12 leaderboard, fees, low‑participation rules) and add multi‑token/multi‑network selection for entry/payouts (MYTH on Abstract; PENGU on Abstract and/or Solana; admin‑addable tokens).
 
 Escrow, refund, and payout flows are provided by a third-party **Tournament Escrow Provider (TEP)** running on **Abstract L2**. This Master PRD summarizes how the app uses escrow; the detailed contract surface, events, and sequencing live in the **[TEP PRD](https://docs.google.com/document/d/1axy-KKL4aUXqua0RwBllSSitcxrxXrphbF1cav8X8f8/edit?usp=sharing)**.
 
@@ -53,7 +53,7 @@ Key differences from the prior MVP:
 
     * **Admin tools**: Create/edit challenges; operational views for support & payouts. \
 
-* Respect existing **Pulse tournament rules**: fees, Top‑12 splits, cancellations, fallbacks. \
+* Respect existing **Pulse challenge rules**: fees, Top‑12 splits, cancellations, fallbacks. \
 
 * Design with **wallet‑app expansion** in mind (future Pulse Wallet features). \
 
@@ -89,7 +89,7 @@ Key differences from the prior MVP:
 
 * **EVM RPC**: Abstract mainnet/testnet via RPC endpoints; viem/wagmi for EVM calls. \
 
-* **Contracts layer**: TEP integration for escrow/payouts. Fallback: our audited EVM tournament escrow + 0xSplits for fee distribution. \
+* **Contracts layer**: TEP integration for escrow/payouts. Fallback: our audited EVM challenge escrow + 0xSplits for fee distribution. \
 
 * **Backend API**: Next.js API routes or a lightweight Node service for: \
 
@@ -952,7 +952,7 @@ Supported Token ↔ Network Combos**
 
 * On **Publish**:
     1. Create challenge in DB with status **UPCOMING**.
-    2. Call **TEP Factory** `createTournament(CreateArgs)` with: `challengeId (keccak(UUID))`, `entryToken`, `tokenDecimals`, `entryFee`, `startAt`, `endAt`, `joinCutoffSecs=600`, `disputeWindowSecs=86400`, `devFeeBps=800`, `orgFeeBps (0..1000)`, `devFeeWallet`, `orgFeeWallet`, `maxJoiners (1..1000)`.
+    2. Call **TEP Factory** `createChallenge(CreateArgs)` with: `challengeId (keccak(UUID))`, `entryToken`, `tokenDecimals`, `entryFee`, `startAt`, `endAt`, `joinCutoffSecs=600`, `disputeWindowSecs=86400`, `devFeeBps=800`, `orgFeeBps (0..1000)`, `devFeeWallet`, `orgFeeWallet`, `maxJoiners (1..1000)`.
     3. Persist returned `escrowAddress`.
     4. (Optional) Organizer may call **seedSponsor(amount)** to add a sponsor pot.
     5. Store contract deployment/interaction gas estimates for user display
@@ -1135,7 +1135,7 @@ Game: All challenges use `PUDGY_PARTY` game type
 
 Challenge Titles: Should reflect Pudgy Party gameplay modes rather than other game names
 
-Examples: "Pudgy Ice Sprint Challenge", "Penguin Coin Rush Tournament", "Arctic Victory Challenge"
+Examples: "Pudgy Ice Sprint Challenge", "Penguin Coin Rush Challenge", "Arctic Victory Challenge"
 
 At settlement, Pulse commits a **Merkle root** + **resultsURI (IPFS/Arweave)** for the final leaderboard to the escrow; raw stats remain in Pulse DB.
 
@@ -1711,7 +1711,7 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 
 1. Admin clicks **Publish** → Triggers contract deployment
-2. **TEP Integration**: Call `createTournament(config)` → Returns `escrowId` and `escrowAddress`
+2. **TEP Integration**: Call `createChallenge(config)` → Returns `escrowId` and `escrowAddress`
 3. Store contract references in database
 4. Update challenge state: DRAFT → UPCOMING
 5. **Configuration Lock**: Once first participant joins, challenge config becomes immutable
@@ -1762,14 +1762,14 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 
 
-* `createTournament(CreateArgs) -> escrowAddress`
+* `createChallenge(CreateArgs) -> escrowAddress`
 * `join(amount, permitOrPermit2)                     // called on the per-challenge escrow`
 * `cancelIfUnderfilled(participantCount)             // called on the per-challenge escrow`
 * `settle(winners[], resultsRoot, resultsURI)        // called on the per-challenge escrow \
 `
-* Events: `TournamentCreated, Seeded, Joined, Cancelled, Refunded,ResultsCommitted, FeePaid, WinnerPaid, Settled`
+* Events: `ChallengeCreated, Seeded, Joined, Cancelled, Refunded,ResultsCommitted, FeePaid, WinnerPaid, Settled`
 * Query methods: 
-    * `getTournamentState(escrowId) → state, participants, totalDeposits`
+    * `getChallengeState(escrowId) → state, participants, totalDeposits`
     * `getParticipantDeposit(escrowId, participant) → amount, timestamp`
 
 **Contract semantics:**
@@ -1787,7 +1787,7 @@ See Challenge Related Notifications to be included: [https://docs.google.com/spr
 
 
 
-* Minimal `TournamentEscrow` + `PrizeDistributor` + **0xSplits** for dev/org fees. \
+* Minimal `ChallengeEscrow`+ `PrizeDistributor` + **0xSplits** for dev/org fees. \
 
 * Add **Chainlink Automation** to guard settle windows; **EAS** attestations for result proofs later. \
 
@@ -2247,7 +2247,7 @@ Participants** = wallets that recorded ≥1 match (appear on leaderboard).
 ## **Chainlink Automation** — Scheduled/triggered jobs run by Chainlink nodes (a possible guardrail to enforce settle windows on EVM).
 
 
-## **Challenge (Object)** — Core tournament entity with title, schedule, scoring mode, token/network, fees, and prize configuration; transitions through states **DRAFT → UPCOMING → LIVE → ENDED → SETTLED/CANCELLED**.
+## **Challenge (Object)** — Core challenge entity with title, schedule, scoring mode, token/network, fees, and prize configuration; transitions through states **DRAFT → UPCOMING → LIVE → ENDED → SETTLED/CANCELLED**.
 
 
 ## **CoinGecko API** — Price feed used to show USD approximations for tokens (server‑side cached).
@@ -2271,7 +2271,7 @@ Participants** = wallets that recorded ≥1 match (appear on leaderboard).
 ## **ERC‑20 / ERC‑721 / ERC‑1155** — Token standards on EVM chains for fungible tokens (ERC‑20) and NFTs (721 single‑id, 1155 multi‑token).
 
 
-## **Escrow (Tournament)** — Smart contract or provider holding entry fees during a challenge; releases funds on **settlement** per rules and fee splits.
+## **Escrow (Challenge)** — Smart contract or provider holding entry fees during a challenge; releases funds on **settlement** per rules and fee splits.
 
 
 ## **Explorer** — Public web UI (e.g., block explorer) for viewing transactions, addresses, and contract state.
@@ -2295,7 +2295,7 @@ Participants** = wallets that recorded ≥1 match (appear on leaderboard).
 ## **Idempotency** — Property of API/webhook processing where repeated requests with the same key produce one effect (prevents duplicate score inserts).
 
 
-## **Join (Flow)** — Client and contract sequence where a participant approves (or Permits) the entry token, then deposits into tournament escrow.
+## **Join (Flow)** — Client and contract sequence where a participant approves (or Permits) the entry token, then deposits into challenge escrow.
 
 
 ## **JSON Web Token (JWT)** — Signed token encoding user/session claims; used for authenticated API calls (short expiry, rotated).
@@ -2322,7 +2322,7 @@ Participants** = wallets that recorded ≥1 match (appear on leaderboard).
 ## **NFT** — Non‑fungible token representing unique assets (e.g., ERC‑721 on EVM, SPL NFT on Solana). 
 
 
-## **Oracle (Results)** — External data attester that posts/verifies tournament outcomes on‑chain. We start with server‑signed scores; oracle integration is a future enhancement.
+## **Oracle (Results)** — External data attester that posts/verifies challenge outcomes on‑chain. We start with server‑signed scores; oracle integration is a future enhancement.
 
 
 ## **Permit (EIP‑2612) / Permit2** — Signed approvals allowing a contract to transfer ERC‑20 tokens without a separate on‑chain approve() (gas/user‑flow optimization). **Permit2** is a generalized approval system.
@@ -2361,7 +2361,7 @@ Participants** = wallets that recorded ≥1 match (appear on leaderboard).
 ## **SPL (Solana Program Library)** — Solana’s token/NFT standard stack (SPL tokens are the canonical fungible tokens on Solana).
 
 
-## **TEP (Tournament Escrow Provider)** — Third‑party or in‑house smart‑contract system handling tournament **escrow, joins, cancellations, and settlement**, with fee routing.
+## **TEP (Tournament Escrow Provider)** — Third‑party or in‑house smart‑contract system handling challenge **escrow, joins, cancellations, and settlement**, with fee routing.
 
 
 ## **Token (Fungible)** — Blockchain asset with decimals and supply (e.g., MYTH ERC‑20, PENGU SPL). Distinct from NFTs.

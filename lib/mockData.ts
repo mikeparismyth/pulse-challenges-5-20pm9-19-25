@@ -1,12 +1,12 @@
-// ENGINEER HANDOFF: This file contains centralized mock tournament data
-// Replace entire mockTournaments array with API call to /api/challenges
+// ENGINEER HANDOFF: This file contains centralized mock challenge data
+// Replace entire mockChallenges array with API call to /api/challenges
 // All components now use this single source of truth
-// Tournament data structure matches PRD specifications exactly
+// Challenge data structure matches PRD specifications exactly
 
-import { Tournament, TournamentCardData, TournamentState, PulseUser, SigninMethod } from './types';
+import { Challenge, ChallengeCardData, ChallengeState, PulseUser, SigninMethod } from './types';
 
 // MOCK: Replace with API call to /api/challenges
-export const mockTournaments: Tournament[] = [
+export const mockChallenges: Challenge[] = [
   {
     id: '550e8400-e29b-41d4-a716-446655440001',
     title: 'Pudgy Ice Sprint Championship',
@@ -15,6 +15,13 @@ export const mockTournaments: Tournament[] = [
     game: 'PUDGY_PARTY',
     game_mode: 'BATTLE_ROYALE',
     mode: 'LEADERBOARD',
+    challenge_type: 'LEADERBOARD',
+    start_date: '2025-01-15T18:00:00Z',
+    end_date: '2025-01-15T22:00:00Z',
+    game_config: {
+      mode: 'BATTLE_ROYALE',
+      scoring_type: 'TOP1_COUNT'
+    },
     leaderboard_config: {
       score_by: 'TOP1_COUNT',
       higher_is_better: true,
@@ -56,12 +63,19 @@ export const mockTournaments: Tournament[] = [
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
-    title: 'Arctic Battle Royale Tournament',
-    slug: 'arctic-battle-royale-tournament',
+    title: 'Arctic Battle Royale Challenge',
+    slug: 'arctic-battle-royale-challenge',
     visibility: 'public',
     game: 'PUDGY_PARTY',
     game_mode: 'BATTLE_ROYALE',
     mode: 'LEADERBOARD',
+    challenge_type: 'LEADERBOARD',
+    start_date: '2025-01-20T16:00:00Z',
+    end_date: '2025-01-20T20:00:00Z',
+    game_config: {
+      mode: 'BATTLE_ROYALE',
+      scoring_type: 'TOP3_COUNT'
+    },
     leaderboard_config: {
       score_by: 'TOP3_COUNT',
       higher_is_better: true,
@@ -109,6 +123,13 @@ export const mockTournaments: Tournament[] = [
     game: 'PUDGY_PARTY',
     game_mode: 'ALL_MODES',
     mode: 'LEADERBOARD',
+    challenge_type: 'LEADERBOARD',
+    start_date: '2025-01-25T12:00:00Z',
+    end_date: '2025-01-25T18:00:00Z',
+    game_config: {
+      mode: 'ALL_MODES',
+      scoring_type: 'COINS_EARNED'
+    },
     leaderboard_config: {
       score_by: 'COINS_EARNED',
       higher_is_better: true,
@@ -156,6 +177,13 @@ export const mockTournaments: Tournament[] = [
     game: 'PUDGY_PARTY',
     game_mode: 'EVENT',
     mode: 'LEADERBOARD',
+    challenge_type: 'LEADERBOARD',
+    start_date: '2025-01-15T14:00:00Z',
+    end_date: '2025-01-15T20:00:00Z',
+    game_config: {
+      mode: 'EVENT',
+      scoring_type: 'TOP1_COUNT'
+    },
     leaderboard_config: {
       score_by: 'TOP1_COUNT',
       higher_is_better: true,
@@ -201,8 +229,15 @@ export const mockTournaments: Tournament[] = [
     slug: 'nfl-rivals-season-championship',
     visibility: 'public',
     game: 'NFL_RIVALS',
-    game_mode: 'SEASON',
+    game_mode: 'ALL_MODES',
     mode: 'LEADERBOARD',
+    challenge_type: 'CHALLENGE',
+    start_date: '2025-01-10T10:00:00Z',
+    end_date: '2025-01-10T16:00:00Z',
+    game_config: {
+      mode: 'ALL_MODES',
+      scoring_type: 'POINTS_SCORED'
+    },
     leaderboard_config: {
       score_by: 'POINTS_SCORED',
       higher_is_better: true,
@@ -237,19 +272,26 @@ export const mockTournaments: Tournament[] = [
     created_by: 'user_202',
     allow_user_generated: true,
     dispute_window_hours: 24,
-    description: 'Dominate the gridiron in the ultimate NFL Rivals season championship! Score the most points across multiple games to claim the title.',
+    description: 'Dominate the gridiron in the ultimate NFL Rivals championship! Score the most points across all game modes to claim the title.',
     participants: 42,
     created_at: '2025-01-01T08:00:00Z',
     updated_at: '2025-01-10T17:00:00Z'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440006',
-    title: 'Playoff Touchdown Challenge',
-    slug: 'playoff-touchdown-challenge',
+    title: 'Stadium Touchdown Challenge',
+    slug: 'stadium-touchdown-challenge',
     visibility: 'public',
     game: 'NFL_RIVALS',
-    game_mode: 'PLAYOFFS',
+    game_mode: 'STADIUMS',
     mode: 'LEADERBOARD',
+    challenge_type: 'CHALLENGE',
+    start_date: '2025-01-30T15:00:00Z',
+    end_date: '2025-01-30T21:00:00Z',
+    game_config: {
+      mode: 'STADIUMS',
+      scoring_type: 'TOUCHDOWNS'
+    },
     leaderboard_config: {
       score_by: 'TOUCHDOWNS',
       higher_is_better: true,
@@ -284,18 +326,18 @@ export const mockTournaments: Tournament[] = [
     created_by: 'user_303',
     allow_user_generated: true,
     dispute_window_hours: 24,
-    description: 'Score the most touchdowns in this high-stakes NFL Rivals playoff tournament! Every touchdown counts in this intense gridiron showdown.',
+    description: 'Score the most touchdowns in this high-stakes NFL Rivals stadium challenge! Every touchdown counts in this intense gridiron showdown.',
     participants: 12,
     created_at: '2025-01-18T13:00:00Z',
     updated_at: '2025-01-19T10:00:00Z'
   }
 ];
 
-// Utility function to convert Tournament to TournamentCardData for UI
-export function tournamentToCardData(tournament: Tournament): TournamentCardData {
+// Utility function to convert Challenge to ChallengeCardData for UI
+export function challengeToCardData(challenge: Challenge): ChallengeCardData {
   // Convert state to simplified UI status
   let status: 'LIVE' | 'UPCOMING' | 'ENDED';
-  switch (tournament.state) {
+  switch (challenge.state) {
     case 'LIVE':
       status = 'LIVE';
       break;
@@ -309,25 +351,25 @@ export function tournamentToCardData(tournament: Tournament): TournamentCardData
   }
 
   // Calculate total prize pool (simplified calculation)
-  const entryFeeNum = parseFloat(tournament.entry_and_prizes.entry_fee);
-  const decimals = tournament.entry_and_prizes.entry_token.decimals;
+  const entryFeeNum = parseFloat(challenge.entry_and_prizes.entry_fee);
+  const decimals = challenge.entry_and_prizes.entry_token.decimals;
   const entryFeeFormatted = (entryFeeNum / Math.pow(10, decimals)).toFixed(2);
   
   // Estimate prize pool (entry fees minus platform fees)
-  const totalEntryFees = entryFeeNum * tournament.participants;
-  const totalFeeBps = tournament.fees.developer_fee_bps + tournament.fees.organizer_fee_bps;
+  const totalEntryFees = entryFeeNum * challenge.participants;
+  const totalFeeBps = challenge.fees.developer_fee_bps + challenge.fees.organizer_fee_bps;
   const prizePoolAmount = totalEntryFees * (1 - totalFeeBps / 10000);
   const prizePoolFormatted = (prizePoolAmount / Math.pow(10, decimals)).toFixed(0);
 
   return {
-    id: tournament.id,
-    title: tournament.title,
+    id: challenge.id,
+    title: challenge.title,
     status,
-    prizePool: `${prizePoolFormatted} ${tournament.entry_and_prizes.prize_token.symbol}`,
-    participants: tournament.participants,
-    maxParticipants: tournament.entry_and_prizes.max_participants || 999,
-    entryFee: `${entryFeeFormatted} ${tournament.entry_and_prizes.entry_token.symbol}`,
-    tokenSymbol: tournament.entry_and_prizes.entry_token.symbol,
+    prizePool: `${prizePoolFormatted} ${challenge.entry_and_prizes.prize_token.symbol}`,
+    participants: challenge.participants,
+    maxParticipants: challenge.entry_and_prizes.max_participants || 999,
+    entryFee: `${entryFeeFormatted} ${challenge.entry_and_prizes.entry_token.symbol}`,
+    tokenSymbol: challenge.entry_and_prizes.entry_token.symbol,
     timeRemaining: status === 'UPCOMING' ? 'Starts in 2 hours' : 
                    status === 'LIVE' ? 'In Progress' : 'Completed'
   };

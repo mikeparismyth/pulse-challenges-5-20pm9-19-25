@@ -1,7 +1,7 @@
 'use client';
 
-// MOCK: Replace mockTournaments with API call to /api/challenges/[id]
-import { mockTournaments } from '@/lib/mockData';
+// MOCK: Replace mockChallenges with API call to /api/challenges/[id]
+import { mockChallenges } from '@/lib/mockData';
 import { GameType } from '@/lib/types';
 import { useParams, notFound } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -61,44 +61,44 @@ export default function ChallengePage() {
     }
   }, [user, challengeId]);
 
-  // Find tournament from centralized mock data
-  const mockTournament = mockTournaments.find(t => t.id === challengeId);
+  // Find challenge from centralized mock data
+  const mockChallengeData = mockChallenges.find(t => t.id === challengeId);
   
   // Convert to display format for UI compatibility
-  const tournament = mockTournament ? {
-    id: mockTournament.id,
-    title: mockTournament.title,
-    status: mockTournament.state === 'LIVE' ? 'LIVE' as const : 
-            mockTournament.state === 'ENDED' || mockTournament.state === 'SETTLED' ? 'ENDED' as const : 
+  const challengeInfo = mockChallengeData ? {
+    id: mockChallengeData.id,
+    title: mockChallengeData.title,
+    status: mockChallengeData.state === 'LIVE' ? 'LIVE' as const : 
+            mockChallengeData.state === 'ENDED' || mockChallengeData.state === 'SETTLED' ? 'ENDED' as const : 
             'UPCOMING' as const,
-    prizePool: `${Math.floor(parseFloat(mockTournament.entry_and_prizes.entry_fee) * mockTournament.participants * (1 - (mockTournament.fees.developer_fee_bps + mockTournament.fees.organizer_fee_bps) / 10000) / Math.pow(10, mockTournament.entry_and_prizes.entry_token.decimals)).toLocaleString()} ${mockTournament.entry_and_prizes.prize_token.symbol}`,
-    participants: mockTournament.participants,
-    maxParticipants: mockTournament.entry_and_prizes.max_participants || 100,
-    entryFee: `${(parseFloat(mockTournament.entry_and_prizes.entry_fee) / Math.pow(10, mockTournament.entry_and_prizes.entry_token.decimals)).toFixed(0)} ${mockTournament.entry_and_prizes.entry_token.symbol}`,
-    timeRemaining: mockTournament.state === 'LIVE' ? 'In Progress' : 
-                   mockTournament.state === 'ENDED' ? 'Completed' : 
+    prizePool: `${Math.floor(parseFloat(mockChallengeData.entry_and_prizes.entry_fee) * mockChallengeData.participants * (1 - (mockChallengeData.fees.developer_fee_bps + mockChallengeData.fees.organizer_fee_bps) / 10000) / Math.pow(10, mockChallengeData.entry_and_prizes.entry_token.decimals)).toLocaleString()} ${mockChallengeData.entry_and_prizes.prize_token.symbol}`,
+    participants: mockChallengeData.participants,
+    maxParticipants: mockChallengeData.entry_and_prizes.max_participants || 100,
+    entryFee: `${(parseFloat(mockChallengeData.entry_and_prizes.entry_fee) / Math.pow(10, mockChallengeData.entry_and_prizes.entry_token.decimals)).toFixed(0)} ${mockChallengeData.entry_and_prizes.entry_token.symbol}`,
+    timeRemaining: mockChallengeData.state === 'LIVE' ? 'In Progress' : 
+                   mockChallengeData.state === 'ENDED' ? 'Completed' : 
                    'Starts in 2 hours',
-    description: mockTournament.description || 'Join this exciting tournament and compete for amazing prizes!',
-    organizerFeeBps: mockTournament.fees.organizer_fee_bps,
-    developerFeeBps: mockTournament.fees.developer_fee_bps,
+    description: mockChallengeData.description || 'Join this exciting challenge and compete for amazing prizes!',
+    organizerFeeBps: mockChallengeData.fees.organizer_fee_bps,
+    developerFeeBps: mockChallengeData.fees.developer_fee_bps,
     rules: [
-      'Tournament follows standard competitive rules',
+      'Challenge follows standard competitive rules',
       'All participants must maintain fair play standards',
-      'Disputes will be handled by tournament officials',
-      'Prize distribution occurs after tournament completion',
+      'Disputes will be handled by challenge officials',
+      'Prize distribution occurs after challenge completion',
       'Anti-cheat measures are actively monitored'
     ],
-    startTime: mockTournament.leaderboard_config.time_window.start_utc,
-    endTime: mockTournament.leaderboard_config.time_window.end_utc,
-    game: mockTournament.game
+    startTime: mockChallengeData.leaderboard_config.time_window.start_utc,
+    endTime: mockChallengeData.leaderboard_config.time_window.end_utc,
+    game: mockChallengeData.game
   } : null;
 
-  if (!tournament) {
+  if (!challengeInfo) {
     notFound();
   }
 
 
-  const gameTheme = GAME_THEMES[tournament.game] || GAME_THEMES['PUDGY_PARTY'];
+  const gameTheme = GAME_THEMES[challengeInfo.game] || GAME_THEMES['PUDGY_PARTY'];
 
   // Extract token info from prizePool string
   const extractTokenInfo = (tokenStr: string) => {
@@ -118,21 +118,21 @@ export default function ChallengePage() {
     return { amount: tokenStr, symbol: '', usdValue: 0 };
   };
 
-  const prizeInfo = extractTokenInfo(tournament.prizePool);
-  const entryInfo = tournament.entryFee ? extractTokenInfo(tournament.entryFee) : null;
+  const prizeInfo = extractTokenInfo(challengeInfo.prizePool);
+  const entryInfo = challengeInfo.entryFee ? extractTokenInfo(challengeInfo.entryFee) : null;
 
   const handleJoinClick = () => {
-    if (tournament.status === 'ENDED') return;
+    if (challengeInfo.status === 'ENDED') return;
     
     // COMPREHENSIVE DEBUG LOGGING
     console.log('🎯 JOIN CLICK DEBUG:');
-    console.log('  - tournament.status:', tournament.status);
+    console.log('  - challengeInfo.status:', challengeInfo.status);
     console.log('  - isAuthenticated:', isAuthenticated);
     console.log('  - user:', user);
     console.log('  - pulseUser:', pulseUser);
-    console.log('  - tournament.game:', tournament.game);
+    console.log('  - challengeInfo.game:', challengeInfo.game);
     console.log('  - pulseUser exists?', !!pulseUser);
-    console.log('  - tournament.game exists?', !!tournament.game);
+    console.log('  - challengeInfo.game exists?', !!challengeInfo.game);
     
     if (!isAuthenticated) {
       console.log('🚪 User not authenticated, showing sign-in modal');
@@ -141,9 +141,9 @@ export default function ChallengePage() {
     }
     
     // Platform requirement check
-    if (user && tournament.game) {
-      const platformCheck = validatePlatformRequirement(user.gamePlatforms || [], tournament.game);
-      console.log('🎮 Platform requirement check for game:', tournament.game);
+    if (user && challengeInfo.game) {
+      const platformCheck = validatePlatformRequirement(user.gamePlatforms || [], challengeInfo.game);
+      console.log('🎮 Platform requirement check for game:', challengeInfo.game);
       console.log('🎮 User platforms:', user.gamePlatforms);
       console.log('🎮 Platform check result:', platformCheck);
       
@@ -194,7 +194,7 @@ export default function ChallengePage() {
       setSelectedWalletType('');
       
       // Show success and update UI
-      toast.success(`Successfully joined ${tournament?.title}!`);
+      toast.success(`Successfully joined ${challengeInfo?.title}!`);
     } else {
       // Wallet connected - proceed directly to transaction signing
       setShowWalletFlow(false);
@@ -262,17 +262,17 @@ export default function ChallengePage() {
                 <Badge
                   variant="outline"
                   className={`text-xs md:text-sm font-semibold px-3 py-1.5 md:px-4 md:py-2 backdrop-blur-sm ${
-                    tournament.status === 'LIVE' 
+                    challengeInfo.status === 'LIVE' 
                       ? 'bg-red-500/90 text-white border-red-500/50 shadow-glow-red' 
-                      : tournament.status === 'UPCOMING'
+                      : challengeInfo.status === 'UPCOMING'
                       ? 'bg-yellow-500/90 text-white border-yellow-500/50 shadow-glow-yellow'
                       : 'bg-gray-500/90 text-white border-gray-500/50'
                   }`}
                 >
-                  {tournament.status === 'LIVE' && (
+                  {challengeInfo.status === 'LIVE' && (
                     <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse" />
                   )}
-                  {tournament.status}
+                  {challengeInfo.status}
                 </Badge>
               </motion.div>
 
@@ -283,7 +283,7 @@ export default function ChallengePage() {
                 transition={{ delay: 0.3 }}
                 className="text-3xl md:text-6xl lg:text-7xl font-bold text-white mb-4 glow-text leading-tight"
               >
-                {tournament.title}
+                {challengeInfo.title}
               </motion.h1>
 
               {/* Description */}
@@ -293,7 +293,7 @@ export default function ChallengePage() {
                 transition={{ delay: 0.4 }}
                 className="text-base md:text-xl text-gray-200 mb-6 md:mb-8 max-w-2xl"
               >
-                {tournament.description}
+                {challengeInfo.description}
               </motion.p>
 
               {/* Stats Cards Row */}
@@ -324,14 +324,14 @@ export default function ChallengePage() {
                     <span className="text-xs md:text-sm text-gray-300 font-medium">Players</span>
                   </div>
                   <div className="text-lg md:text-2xl font-bold text-white mb-2">
-                    {tournament.participants}/{tournament.maxParticipants}
+                    {challengeInfo.participants}/{challengeInfo.maxParticipants}
                   </div>
                   <ProgressBar
-                    current={tournament.participants}
-                    max={tournament.maxParticipants}
+                    current={challengeInfo.participants}
+                    max={challengeInfo.maxParticipants}
                     showNumbers={false}
                     size="sm"
-                    animated={tournament.status === 'LIVE'}
+                    animated={challengeInfo.status === 'LIVE'}
                   />
                 </div>
 
@@ -340,18 +340,18 @@ export default function ChallengePage() {
                   <div className="flex items-center mb-2">
                     <Clock className="w-4 h-4 md:w-5 md:h-5 mr-2 text-yellow-400" />
                     <span className="text-xs md:text-sm text-gray-300 font-medium">
-                      {tournament.status === 'UPCOMING' ? 'Starts In' : 
-                       tournament.status === 'LIVE' ? 'Status' : 'Completed'}
+                      {challengeInfo.status === 'UPCOMING' ? 'Starts In' : 
+                       challengeInfo.status === 'LIVE' ? 'Status' : 'Completed'}
                     </span>
                   </div>
                   <div className="text-base md:text-lg font-bold text-white">
-                    {tournament.status === 'UPCOMING' ? (
+                    {challengeInfo.status === 'UPCOMING' ? (
                       <CountdownTimer 
-                        targetDate={tournament.startTime}
+                        targetDate={challengeInfo.startTime}
                         size="sm"
                       />
                     ) : (
-                      tournament.timeRemaining
+                      challengeInfo.timeRemaining
                     )}
                   </div>
                 </div>
@@ -367,14 +367,14 @@ export default function ChallengePage() {
                 <Button
                   className="btn-gaming-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4 flex items-center space-x-2 shadow-gaming-hover w-full sm:w-auto"
                   onClick={handleJoinClick}
-                  disabled={tournament.status === 'ENDED' || hasJoined}
+                  disabled={challengeInfo.status === 'ENDED' || hasJoined}
                 >
                   <Zap className="w-5 h-5" />
                   <span>
                     {hasJoined ? 'JOINED' : 
-                     tournament.status === 'LIVE' ? 'JOIN NOW' : 
-                     tournament.status === 'UPCOMING' ? 'JOIN' : 'VIEW RESULTS'}
-                    {entryInfo && tournament.status !== 'ENDED' && !hasJoined && (
+                     challengeInfo.status === 'LIVE' ? 'JOIN NOW' : 
+                     challengeInfo.status === 'UPCOMING' ? 'JOIN' : 'VIEW RESULTS'}
+                    {entryInfo && challengeInfo.status !== 'ENDED' && !hasJoined && (
                       <span className="ml-2 text-sm opacity-90">
                         - {entryInfo.amount} {entryInfo.symbol} (${entryInfo.usdValue.toFixed(2)})
                       </span>
@@ -414,15 +414,15 @@ export default function ChallengePage() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="glass-card p-6">
-              <h3 className="text-lg md:text-xl font-semibold text-white mb-4">Tournament Details</h3>
+              <h3 className="text-lg md:text-xl font-semibold text-white mb-4">Challenge Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="text-[#30FFE6] font-medium mb-2">Schedule</h4>
                   <p className="text-sm md:text-base text-gray-300">
-                    Starts: {new Date(tournament.startTime).toLocaleString()}
+                    Starts: {new Date(challengeInfo.startTime).toLocaleString()}
                   </p>
                   <p className="text-sm md:text-base text-gray-300">
-                    Ends: {new Date(tournament.endTime).toLocaleString()}
+                    Ends: {new Date(challengeInfo.endTime).toLocaleString()}
                   </p>
                 </div>
                 <div>
@@ -468,9 +468,9 @@ export default function ChallengePage() {
 
           <TabsContent value="rules" className="space-y-6">
             <div className="glass-card p-6">
-              <h3 className="text-lg md:text-xl font-semibold text-white mb-6">Tournament Rules</h3>
+              <h3 className="text-lg md:text-xl font-semibold text-white mb-6">Challenge Rules</h3>
               <div className="space-y-4">
-                {tournament.rules.map((rule, index) => (
+                {challengeInfo.rules.map((rule, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-[#8E1EFE] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-white text-sm font-semibold">{index + 1}</span>
@@ -504,11 +504,11 @@ export default function ChallengePage() {
         getConnectedWallet={getConnectedWallet}
         formatWalletAddress={formatWalletAddress}
         challenge={{
-          title: tournament.title,
-          entryFee: tournament.entryFee || '0 MYTH',
-          prizePool: tournament.prizePool,
-          organizerFeeBps: tournament.organizerFeeBps,
-          developerFeeBps: tournament.developerFeeBps
+          title: challengeInfo.title,
+          entryFee: challengeInfo.entryFee || '0 MYTH',
+          prizePool: challengeInfo.prizePool,
+          organizerFeeBps: challengeInfo.organizerFeeBps,
+          developerFeeBps: challengeInfo.developerFeeBps
         }}
         onWalletFlowStart={(walletType: string) => {
           console.log('🚀 Starting wallet flow for:', walletType);
@@ -546,8 +546,8 @@ export default function ChallengePage() {
         onSuccess={() => handleWalletSuccess('connection')}
         onConnect={connectWallet}
         challenge={{
-          title: tournament.title,
-          entryFee: tournament.entryFee || '0 MYTH'
+          title: challengeInfo.title,
+          entryFee: challengeInfo.entryFee || '0 MYTH'
         }}
       />
 
@@ -559,8 +559,8 @@ export default function ChallengePage() {
           setShowPlatformModal(false);
         }}
         onSuccess={handlePlatformSuccess}
-        gameType={tournament.game}
-        challengeTitle={tournament.title}
+        gameType={challengeInfo.game}
+        challengeTitle={challengeInfo.title}
       />
 
       {/* Transaction Signing Modals */}
@@ -575,8 +575,8 @@ export default function ChallengePage() {
         onSuccess={() => handleWalletSuccess('transaction')}
         connectedWallet={getConnectedWallet(selectedWalletType)!}
         challenge={{
-          title: tournament.title,
-          entryFee: tournament.entryFee || '0 MYTH'
+          title: challengeInfo.title,
+          entryFee: challengeInfo.entryFee || '0 MYTH'
         }}
       />
     </div>
