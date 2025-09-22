@@ -430,6 +430,13 @@ export const mockPulseUser: PulseUser = {
 export function createMockUserForSigninMethod(signinMethod: SigninMethod): PulseUser {
   const baseUser = { ...mockPulseUser };
   
+  // IMPORTANT: Remove pre-linked platforms for new users to test platform requirement flow
+  baseUser.gamePlatforms = []; // Start with no platforms linked
+  baseUser.eligibility = {
+    ...baseUser.eligibility,
+    hasRequiredPlatformForChallenge: false // No platforms = no platform access
+  };
+  
   // Modify wallets based on signin method
   switch (signinMethod) {
     case 'abstract':

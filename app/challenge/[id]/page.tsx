@@ -22,6 +22,8 @@ import JoinChallengeModal from '@/components/JoinChallengeModal';
 import WalletConnectionModals from '@/components/WalletConnectionModals';
 import TransactionSigningModals from '@/components/TransactionSigningModals';
 import PrivySignInModal from '@/components/auth/PrivySignInModal';
+import RequiredPlatformModal from '@/components/RequiredPlatformModal';
+import { validatePlatformRequirement } from '@/lib/types';
 
 const GAME_THEMES = {
   'PUDGY_PARTY': {
@@ -41,7 +43,7 @@ const GAME_THEMES = {
 export default function ChallengePage() {
   const params = useParams();
   const challengeId = params.id as string;
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, pulseUser } = useAuth();
   const { connectWallet, getConnectedWallet, formatWalletAddress } = useWalletConnections();
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -49,6 +51,7 @@ export default function ChallengePage() {
   const [showWalletFlow, setShowWalletFlow] = useState(false);
   const [showTransactionFlow, setShowTransactionFlow] = useState(false);
   const [selectedWalletType, setSelectedWalletType] = useState<string>('');
+  const [showPlatformModal, setShowPlatformModal] = useState(false);
 
   // Initialize hasJoined state based on existing participation
   useEffect(() => {
@@ -121,16 +124,48 @@ export default function ChallengePage() {
   const handleJoinClick = () => {
     if (tournament.status === 'ENDED') return;
     
-    console.log('🎯 Join button clicked');
-    console.log('🔐 Authentication status:', isAuthenticated);
+    // COMPREHENSIVE DEBUG LOGGING
+    console.log('🎯 JOIN CLICK DEBUG:');
+    console.log('  - tournament.status:', tournament.status);
+    console.log('  - isAuthenticated:', isAuthenticated);
+    console.log('  - user:', user);
+    console.log('  - pulseUser:', pulseUser);
+    console.log('  - tournament.game:', tournament.game);
+    console.log('  - pulseUser exists?', !!pulseUser);
+    console.log('  - tournament.game exists?', !!tournament.game);
     
     if (!isAuthenticated) {
       console.log('🚪 User not authenticated, showing sign-in modal');
       setShowSignInModal(true);
-    } else {
+      return;
+    }
+    
+    // Platform requirement check
+    if (user && tournament.game) {
+      const platformCheck = validatePlatformRequirement(user.gamePlatforms || [], tournament.game);
+      console.log('🎮 Platform requirement check for game:', tournament.game);
+      console.log('🎮 User platforms:', user.gamePlatforms);
+      console.log('🎮 Platform check result:', platformCheck);
+      
+      if (!platformCheck.isValid) {
+        console.log('🎮 Platform requirement not met, showing platform modal');
+        setShowPlatformModal(true);
+        return;
+      }
+    }
+    
+    console.log('✅ User authenticated with required platform, showing join modal');
+    setShowJoinModal(true);
+  };
+
+  const handlePlatformSuccess = () => {
+    console.log('✅ Platform connected successfully, proceeding to join modal');
+    setShowPlatformModal(false);
+    // Brief delay to ensure platform connection is processed
+    setTimeout(() => {
       console.log('✅ User authenticated, showing join modal');
       setShowJoinModal(true);
-    }
+    }, 100);
   };
 
   const handleSignInSuccess = () => {
@@ -514,6 +549,18 @@ export default function ChallengePage() {
           title: tournament.title,
           entryFee: tournament.entryFee || '0 MYTH'
         }}
+      />
+
+      {/* Required Platform Modal */}
+      <RequiredPlatformModal
+        isOpen={showPlatformModal}
+        onClose={() => {
+          console.log('🔄 Closing platform modal');
+          setShowPlatformModal(false);
+        }}
+        onSuccess={handlePlatformSuccess}
+        gameType={tournament.game}
+        challengeTitle={tournament.title}
       />
 
       {/* Transaction Signing Modals */}
